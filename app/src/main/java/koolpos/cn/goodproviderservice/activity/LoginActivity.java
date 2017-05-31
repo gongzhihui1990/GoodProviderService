@@ -49,7 +49,7 @@ public class LoginActivity extends AppCompatActivity {
     /**
      * Id to identity READ_CONTACTS permission request.
      */
-    private static final int REQUEST_PERMISSIONS = 0;
+    private static final int REQUEST_PERMISSIONS = 1;
 
     /**
      * A dummy authentication store containing known user names and passwords.
