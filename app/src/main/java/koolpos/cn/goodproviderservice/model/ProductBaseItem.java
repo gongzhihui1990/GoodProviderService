@@ -4,7 +4,8 @@ package koolpos.cn.goodproviderservice.model;
  * Created by Administrator on 2017/6/5.
  */
 
-class ProducBaseItem {
+class ProductBaseItem extends BaseBean{
+    private static final long serialVersionUID = -5773957836869932341L;
     // -   id	1
 // -   itemId	550044298161
 // -   num	444
@@ -39,5 +40,5 @@ class ProducBaseItem {
     private String created;
     private String lastUpdated;
     private String orderNumber;
-
+    private String outerId;
 }

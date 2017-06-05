@@ -2,12 +2,15 @@ package koolpos.cn.goodproviderservice;
 
 import android.app.Application;
 import android.content.Context;
+import android.content.Intent;
 
 import org.greenrobot.greendao.database.Database;
 
 import koolpos.cn.goodproviderservice.api.LocalTestApi;
+import koolpos.cn.goodproviderservice.constans.Action;
 import koolpos.cn.goodproviderservice.mvcDao.greenDao.DaoMaster;
 import koolpos.cn.goodproviderservice.mvcDao.greenDao.DaoSession;
+import koolpos.cn.goodproviderservice.service.LocalService;
 import koolpos.cn.goodproviderservice.util.Loger;
 
 /**
@@ -37,7 +40,8 @@ public class MyApplication extends Application {
         DaoMaster.DevOpenHelper helper = new DaoMaster.DevOpenHelper(this, ENCRYPTED ? "notes-db-encrypted" : "gp-db");
         Database db = ENCRYPTED ? helper.getEncryptedWritableDb("super-secret") : helper.getWritableDb();
         daoSession = new DaoMaster(db).newSession();
-        Loger.d("onCreate");
-        LocalTestApi.addTestGoodsData();
+        Intent intent = new Intent(getContext(), LocalService.class);
+        intent.setAction(Action.InitData);
+        startService(intent);
     }
 }
