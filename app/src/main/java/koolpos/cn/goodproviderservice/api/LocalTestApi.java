@@ -1,7 +1,6 @@
 package koolpos.cn.goodproviderservice.api;
 
 import android.graphics.Bitmap;
-import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
@@ -13,14 +12,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-import koolpos.cn.goodproviderservice.util.Data;
-
 import koolpos.cn.goodproviderservice.MyApplication;
 import koolpos.cn.goodproviderservice.mvcDao.greenDao.Goods;
+import koolpos.cn.goodproviderservice.util.Data;
 import koolpos.cn.goodproviderservice.util.FileUtil;
 import koolpos.cn.goodproviderservice.util.Loger;
 
@@ -30,7 +27,7 @@ import koolpos.cn.goodproviderservice.util.Loger;
 
 public class LocalTestApi {
     public static void addTestGoodsData() {
-        MyApplication.State=MyApplication.State_Loading;
+        MyApplication.State = MyApplication.State_Loading;
         MyApplication.getDaoSession().getGoodsDao().deleteAll();
         List<Goods> goods = new ArrayList<Goods>();
         goods.addAll(createTest("薯片", "食品"));
@@ -83,9 +80,9 @@ public class LocalTestApi {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                MyApplication.State=MyApplication.State_Load_Image;
-               List<Goods> goodsList= MyApplication.getDaoSession().getGoodsDao().queryBuilder().list();
-                for (Goods itemGood: goodsList){
+                MyApplication.State = MyApplication.State_Load_Image;
+                List<Goods> goodsList = MyApplication.getDaoSession().getGoodsDao().queryBuilder().list();
+                for (Goods itemGood : goodsList) {
                     File file = null;
                     try {
                         file = FileUtil.getImageCashFile(itemGood.getImage_url());
@@ -100,9 +97,9 @@ public class LocalTestApi {
                                 .diskCacheStrategy(DiskCacheStrategy.ALL)
                                 .into(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL)
                                 .get();
-                        if (bitmap != null){
+                        if (bitmap != null) {
                             // 在这里执行图片保存方法
-                            saveImageToGallery(file,bitmap);
+                            saveImageToGallery(file, bitmap);
                         }
                     } catch (InterruptedException e) {
                         e.printStackTrace();
@@ -110,15 +107,16 @@ public class LocalTestApi {
                         e.printStackTrace();
                     }
                 }
-                MyApplication.State=MyApplication.State_OK;
+                MyApplication.State = MyApplication.State_OK;
             }
         }).start();
     }
+
     private static void saveImageToGallery(File savedFile, Bitmap bmp) {
         // 首先保存图片
-        if (savedFile.exists()&&savedFile.length()!=0){
+        if (savedFile.exists() && savedFile.length() != 0) {
             //已经下过
-            Loger.d("file save 已经下过 - "+savedFile.getName());
+            Loger.d("file save 已经下过 - " + savedFile.getName());
             return;
         }
         FileOutputStream fos = null;
@@ -126,7 +124,7 @@ public class LocalTestApi {
             fos = new FileOutputStream(savedFile);
             bmp.compress(Bitmap.CompressFormat.JPEG, 100, fos);
             fos.flush();
-            Loger.d("file save ok - "+savedFile.getName());
+            Loger.d("file save ok - " + savedFile.getName());
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -141,13 +139,14 @@ public class LocalTestApi {
             }
         }
     }
-        private static ArrayList<Goods> createTest(String name, String type) {
+
+    private static ArrayList<Goods> createTest(String name, String type) {
         ArrayList<Goods> goods = new ArrayList<>();
-        int size = (int) ((10 * Math.random())) +1;
+        int size = (int) ((10 * Math.random())) + 1;
         for (int i = 0; i < size; i++) {
             int x = (int) ((10000 * Math.random())) % Data.URLS.length;
-            String url= Data.URLS[x];
-            goods.add(Goods.createFromTest(name, type,url));
+            String url = Data.URLS[x];
+            goods.add(Goods.createFromTest(name, type, url));
         }
         return goods;
     }
