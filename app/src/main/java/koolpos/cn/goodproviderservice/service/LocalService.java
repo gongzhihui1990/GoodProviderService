@@ -39,6 +39,9 @@ public class LocalService extends IntentService {
     public LocalService(String name) {
         super(name);
     }
+    public LocalService() {
+        super("LocalService");
+    }
 
     @Override
     protected void onHandleIntent(@Nullable Intent intent) {
@@ -46,6 +49,7 @@ public class LocalService extends IntentService {
         if (intent!=null){
             action = intent.getAction();
         }
+        Loger.d("onHandleIntent "+ action);
         switch (action){
             case Action.InitData:
                 initData();

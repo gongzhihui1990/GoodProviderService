@@ -36,12 +36,15 @@ public class MyApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+        Loger.setLogClose(false);
         context=getBaseContext();
         DaoMaster.DevOpenHelper helper = new DaoMaster.DevOpenHelper(this, ENCRYPTED ? "notes-db-encrypted" : "gp-db");
         Database db = ENCRYPTED ? helper.getEncryptedWritableDb("super-secret") : helper.getWritableDb();
         daoSession = new DaoMaster(db).newSession();
         Intent intent = new Intent(getContext(), LocalService.class);
         intent.setAction(Action.InitData);
+        Loger.d("start Service");
         startService(intent);
+
     }
 }

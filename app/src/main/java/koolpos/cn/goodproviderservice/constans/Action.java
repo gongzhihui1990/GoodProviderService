@@ -5,5 +5,5 @@ package koolpos.cn.goodproviderservice.constans;
  */
 
 public class Action {
-    public static final String InitData="InitData";
+    public static final String InitData="com.service.local.InitData";
 }

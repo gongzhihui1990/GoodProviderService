@@ -25,6 +25,11 @@
             </intent-filter>
         </service>
 
+        <service android:name=".service.LocalService">
+            <intent-filter>
+                <action android:name="com.service.local.InitData"/>
+            </intent-filter>
+        </service>
         <activity
             android:name=".activity.LoginActivity"
             android:label="@string/title_activity_set">
