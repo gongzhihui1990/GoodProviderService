@@ -42,4 +42,8 @@ public class BaseResponse<T> extends BaseBean{
     public void setData(T data) {
         this.data = data;
     }
+
+    public boolean isOK() {
+        return status!=null&&status.equals("OK");
+    }
 }

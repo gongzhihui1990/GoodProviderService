@@ -15,8 +15,9 @@ public class AIDLResponse implements Serializable{
     private String data;
     private String message;
     private int code;
+    private String status;
     public AIDLResponse(){
-        message=SUCCESS;
+        status=SUCCESS;
         code=0;
     }
     public String getData() {
@@ -41,6 +42,14 @@ public class AIDLResponse implements Serializable{
 
     public void setCode(int code) {
         this.code = code;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 
     @Override

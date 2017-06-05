@@ -28,6 +28,19 @@ public class LocalApi {
     public static AIDLResponse proxyPost(JSONObject reqJson) {
         String action = reqJson.optString("action");
         AIDLResponse response=new AIDLResponse();
+        if (getAppState()!=MyApplication.State_OK){
+            response.setCode(-1);
+            response.setStatus(AIDLResponse.FAIL);
+            switch (getAppState()){
+                case MyApplication.State_Loading:
+                    response.setMessage("数据加载中，稍后重试");
+                    break;
+                default:
+                    response.setMessage("其他状态中"+"（"+getAppState()+"）");
+                    break;
+            }
+            return response;
+        }
         switch (action){
             case "local/get/appState":
                 response.setData(getAppState());

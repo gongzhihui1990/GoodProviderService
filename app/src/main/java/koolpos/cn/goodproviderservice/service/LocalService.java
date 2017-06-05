@@ -15,6 +15,7 @@ import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
+import koolpos.cn.goodproviderservice.MyApplication;
 import koolpos.cn.goodproviderservice.api.StoreTroncellApi;
 import koolpos.cn.goodproviderservice.constans.Action;
 import koolpos.cn.goodproviderservice.constans.Constant;
@@ -52,13 +53,13 @@ public class LocalService extends IntentService {
         Loger.d("onHandleIntent "+ action);
         switch (action){
             case Action.InitData:
-                initData();
+                initData(1);
                 break;
         }
     }
-    private void initData(){
+    private void initData(final int timeDelay){
         Loger.d("initData");
-        Observable.timer(1,TimeUnit.SECONDS)
+        Observable.timer(timeDelay,TimeUnit.SECONDS)
                 .map(new Function<Long, StoreTroncellApi>() {
                     @Override
                     public StoreTroncellApi apply(@NonNull Long aLong) throws Exception {
@@ -81,6 +82,16 @@ public class LocalService extends IntentService {
                                     @Override
                                     public void onNext(BaseResponse<PageDataResponse<ProductRootItem>> pageDataResponseBaseResponse) {
                                         Loger.d("pageDataResponseBaseResponse"+pageDataResponseBaseResponse.toString());
+                                        if (pageDataResponseBaseResponse.isOK()){
+                                            MyApplication.State=S
+                                        }else {
+                                            if (timeDelay>=30){
+                                                initData(timeDelay);
+                                            }else {
+                                                int delay = timeDelay+1;
+                                                initData(delay);
+                                            }
+                                        }
                                     }
 
                                     @Override

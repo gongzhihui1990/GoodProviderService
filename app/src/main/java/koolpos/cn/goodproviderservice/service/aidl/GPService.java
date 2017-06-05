@@ -35,6 +35,7 @@ public class GPService extends BaseService {
                 e.printStackTrace();
             }
 
+            Loger.d("response:"+response.toString());
             return response.toString();
         }
     };
