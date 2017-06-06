@@ -2,15 +2,15 @@ package koolpos.cn.goodproviderservice.api;
 
 import com.google.gson.Gson;
 
-import org.greenrobot.greendao.query.Query;
 import org.greenrobot.greendao.query.WhereCondition;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import koolpos.cn.goodproviderservice.MyApplication;
+import koolpos.cn.goodproviderservice.constans.State;
+import koolpos.cn.goodproviderservice.constans.StateEnum;
 import koolpos.cn.goodproviderservice.mvcDao.greenDao.Goods;
 import koolpos.cn.goodproviderservice.mvcDao.greenDao.GoodsDao;
 import koolpos.cn.goodproviderservice.util.Loger;
@@ -26,24 +26,17 @@ public class LocalApi {
     }
 
     public static AIDLResponse proxyPost(JSONObject reqJson) {
-        String action = reqJson.optString("action");
         AIDLResponse response=new AIDLResponse();
-        if (getAppState()!=MyApplication.State_OK){
+        if (getAppState().getEnum() != StateEnum.Ok){
             response.setCode(-1);
             response.setStatus(AIDLResponse.FAIL);
-            switch (getAppState()){
-                case MyApplication.State_Loading:
-                    response.setMessage("数据加载中，稍后重试");
-                    break;
-                default:
-                    response.setMessage("其他状态中"+"（"+getAppState()+"）");
-                    break;
-            }
+            response.setMessage(getAppState().getMessage());
             return response;
         }
+        String action = reqJson.optString("action");
         switch (action){
             case "local/get/appState":
-                response.setData(getAppState());
+                response.setData(getAppState().getMessage());
                 break;
             case "local/get/all":
                 response.setData(getAll());
@@ -63,8 +56,8 @@ public class LocalApi {
         return response;
     }
 
-    private static String getAppState() {
-        return MyApplication.State;
+    private static State getAppState() {
+        return MyApplication.StateNow;
     }
 
     private static String getListByType(String type) {

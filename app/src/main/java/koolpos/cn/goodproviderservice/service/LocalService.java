@@ -19,6 +19,8 @@ import koolpos.cn.goodproviderservice.MyApplication;
 import koolpos.cn.goodproviderservice.api.StoreTroncellApi;
 import koolpos.cn.goodproviderservice.constans.Action;
 import koolpos.cn.goodproviderservice.constans.Constant;
+import koolpos.cn.goodproviderservice.constans.State;
+import koolpos.cn.goodproviderservice.constans.StateEnum;
 import koolpos.cn.goodproviderservice.model.BaseResponse;
 import koolpos.cn.goodproviderservice.model.PageDataResponse;
 import koolpos.cn.goodproviderservice.model.ProductRootItem;
@@ -59,6 +61,8 @@ public class LocalService extends IntentService {
     }
     private void initData(final int timeDelay){
         Loger.d("initData");
+        MyApplication.StateNow = new State(StateEnum.Progressing,"商品数据加载中");
+
         Observable.timer(timeDelay,TimeUnit.SECONDS)
                 .map(new Function<Long, StoreTroncellApi>() {
                     @Override
@@ -83,7 +87,7 @@ public class LocalService extends IntentService {
                                     public void onNext(BaseResponse<PageDataResponse<ProductRootItem>> pageDataResponseBaseResponse) {
                                         Loger.d("pageDataResponseBaseResponse"+pageDataResponseBaseResponse.toString());
                                         if (pageDataResponseBaseResponse.isOK()){
-                                            MyApplication.State=S
+
                                         }else {
                                             if (timeDelay>=30){
                                                 initData(timeDelay);

@@ -27,7 +27,7 @@ import koolpos.cn.goodproviderservice.util.Loger;
 
 public class LocalTestApi {
     public static void addTestGoodsData() {
-        MyApplication.State = MyApplication.State_Loading;
+//        MyApplication.StateNow = MyApplication.State_Loading;
         MyApplication.getDaoSession().getGoodsDao().deleteAll();
         List<Goods> goods = new ArrayList<Goods>();
         goods.addAll(createTest("薯片", "食品"));
@@ -80,7 +80,7 @@ public class LocalTestApi {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                MyApplication.State = MyApplication.State_Load_Image;
+//                MyApplication.State = MyApplication.State_Load_Image;
                 List<Goods> goodsList = MyApplication.getDaoSession().getGoodsDao().queryBuilder().list();
                 for (Goods itemGood : goodsList) {
                     File file = null;
@@ -107,7 +107,7 @@ public class LocalTestApi {
                         e.printStackTrace();
                     }
                 }
-                MyApplication.State = MyApplication.State_OK;
+//                MyApplication.State = MyApplication.State_OK;
             }
         }).start();
     }
