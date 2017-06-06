@@ -9,9 +9,9 @@ import com.jakewharton.retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import java.util.concurrent.TimeUnit;
 
 import io.reactivex.Observable;
-import io.reactivex.Observer;
+import io.reactivex.ObservableSource;
 import io.reactivex.annotations.NonNull;
-import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.BiFunction;
 import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
@@ -25,6 +25,7 @@ import koolpos.cn.goodproviderservice.model.BaseResponse;
 import koolpos.cn.goodproviderservice.model.PageDataResponse;
 import koolpos.cn.goodproviderservice.model.ProductCategory;
 import koolpos.cn.goodproviderservice.model.ProductRootItem;
+import koolpos.cn.goodproviderservice.rx.RetryWithDelay;
 import koolpos.cn.goodproviderservice.util.Loger;
 import okhttp3.OkHttpClient;
 import retrofit2.Retrofit;
@@ -57,118 +58,99 @@ public class LocalService extends IntentService {
         Loger.d("onHandleIntent " + action);
         switch (action) {
             case Action.InitData:
-                initData(1);
+                Observable<BaseResponse<PageDataResponse<ProductRootItem>>> productsObs = getAllProducts();
+                Observable<BaseResponse<PageDataResponse<ProductCategory>>> categoryObs = getCategory();
+                Observable.zip(productsObs, categoryObs, new BiFunction<BaseResponse<PageDataResponse<ProductRootItem>>, BaseResponse<PageDataResponse<ProductCategory>>, Boolean>() {
+                    @Override
+                    public Boolean apply(@NonNull BaseResponse<PageDataResponse<ProductRootItem>> allProducts, @NonNull BaseResponse<PageDataResponse<ProductCategory>> allCategory) throws Exception {
+                        Loger.d("数据全部下载，开始写数据库");
+                        Loger.d("allProducts:"+allProducts.getData().toString());
+                        Loger.d("allCategory:"+allCategory.getData().toString());
+
+                        return false;
+                    }
+                }).subscribeOn(Schedulers.io())
+                        .observeOn(Schedulers.io())
+                        .subscribe(new Consumer<Boolean>() {
+                            @Override
+                            public void accept(@NonNull Boolean aBoolean) throws Exception {
+                                Loger.d("数据库写成功？"+aBoolean);
+                            }
+                        });
                 break;
         }
     }
 
-    private void initData(final int timeDelay) {
-        Loger.d("initData");
+    /**
+     * getAllProducts from net
+     * @return
+     */
+    private Observable<BaseResponse<PageDataResponse<ProductRootItem>>> getAllProducts() {
+        Loger.d("所有商品数据加载中");
         MyApplication.StateNow = new State(StateEnum.Progressing, "所有商品数据加载中");
-
-        Observable.timer(timeDelay, TimeUnit.SECONDS)
+        return Observable.timer(1, TimeUnit.SECONDS)
+                .subscribeOn(Schedulers.io())
+                .observeOn(Schedulers.io())
                 .map(new Function<Long, StoreTroncellApi>() {
                     @Override
                     public StoreTroncellApi apply(@NonNull Long aLong) throws Exception {
                         return getStoreApiService();
                     }
-                }).subscribeOn(Schedulers.io())
-                .observeOn(Schedulers.io())
-                .subscribe(new Consumer<StoreTroncellApi>() {
+                }).flatMap(new Function<StoreTroncellApi, ObservableSource<BaseResponse<PageDataResponse<ProductRootItem>>>>() {
                     @Override
-                    public void accept(@NonNull StoreTroncellApi storeTroncellApi) throws Exception {
-                        storeTroncellApi.getProducts(Constant.TestKey)
-                                .subscribeOn(Schedulers.io())
-                                .observeOn(Schedulers.io())
-                                .subscribe(new Observer<BaseResponse<PageDataResponse<ProductRootItem>>>() {
+                    public ObservableSource<BaseResponse<PageDataResponse<ProductRootItem>>> apply(@NonNull StoreTroncellApi storeTroncellApi) throws Exception {
+                        return storeTroncellApi.getProducts(Constant.TestKey)
+                                .map(new Function<BaseResponse<PageDataResponse<ProductRootItem>>, BaseResponse<PageDataResponse<ProductRootItem>>>() {
                                     @Override
-                                    public void onSubscribe(Disposable d) {
-
-                                    }
-
-                                    @Override
-                                    public void onNext(BaseResponse<PageDataResponse<ProductRootItem>> response) {
-                                        Loger.d("response ProductRootItem:" + response.toString());
+                                    public BaseResponse<PageDataResponse<ProductRootItem>> apply(@NonNull BaseResponse<PageDataResponse<ProductRootItem>> response) throws Exception {
                                         if (response.isOK()) {
-                                            getCate(0);
+                                            return response;
                                         } else {
-                                            if (timeDelay >= 30) {
-                                                initData(timeDelay);
-                                            } else {
-                                                int delay = timeDelay + 1;
-                                                initData(delay);
-                                            }
+                                            throw new Exception(response.getMessage());
                                         }
                                     }
-
-                                    @Override
-                                    public void onError(Throwable e) {
-                                        e.printStackTrace();
-                                    }
-
-                                    @Override
-                                    public void onComplete() {
-
-                                    }
-
-                                });
+                                })
+                                .retryWhen(RetryWithDelay.crate())
+                                .subscribeOn(Schedulers.io())
+                                .observeOn(Schedulers.io());
                     }
                 });
     }
 
-    private void getCate(final int timeDelay) {
+    /**
+     * getCategory from net
+     * @return
+     */
+    private Observable<BaseResponse<PageDataResponse<ProductCategory>>> getCategory() {
+        Loger.d("商品类型数据加载中");
         MyApplication.StateNow = new State(StateEnum.Progressing, "商品类型数据加载中");
-
-        Observable.timer(timeDelay, TimeUnit.SECONDS)
+       return Observable.timer(1, TimeUnit.SECONDS)
+                .subscribeOn(Schedulers.io())
+                .observeOn(Schedulers.io())
                 .map(new Function<Long, StoreTroncellApi>() {
                     @Override
                     public StoreTroncellApi apply(@NonNull Long aLong) throws Exception {
                         return getStoreApiService();
                     }
-                }).subscribeOn(Schedulers.io())
-                .observeOn(Schedulers.io())
-                .subscribe(new Consumer<StoreTroncellApi>() {
-                    @Override
-                    public void accept(@NonNull StoreTroncellApi storeTroncellApi) throws Exception {
-                        storeTroncellApi.getProductCategories(Constant.TestKey)
-                                .subscribeOn(Schedulers.io())
-                                .observeOn(Schedulers.io())
-                                .subscribe(new Observer<BaseResponse<PageDataResponse<ProductCategory>>>() {
-                                    @Override
-                                    public void onSubscribe(Disposable d) {
-
-                                    }
-
-                                    @Override
-                                    public void onNext(BaseResponse<PageDataResponse<ProductCategory>> response) {
-                                        Loger.d("response ProductCategory:" + response.toString());
-                                        if (response.isOK()) {
-                                            MyApplication.StateNow = new State(StateEnum.Progressing, "数据本地保存中");
-
-                                        } else {
-                                            if (timeDelay >= 30) {
-                                                initData(timeDelay);
-                                            } else {
-                                                int delay = timeDelay + 1;
-                                                initData(delay);
-                                            }
-                                        }
-                                    }
-
-                                    @Override
-                                    public void onError(Throwable e) {
-                                        e.printStackTrace();
-                                    }
-
-                                    @Override
-                                    public void onComplete() {
-
-                                    }
-
-                                });
-                    }
-                });
-
+                }).flatMap(new Function<StoreTroncellApi, ObservableSource<BaseResponse<PageDataResponse<ProductCategory>>>>() {
+            @Override
+            public ObservableSource<BaseResponse<PageDataResponse<ProductCategory>>> apply(@NonNull StoreTroncellApi storeTroncellApi) throws Exception {
+                return  storeTroncellApi.getProductCategories(Constant.TestKey)
+                        .map(new Function<BaseResponse<PageDataResponse<ProductCategory>>, BaseResponse<PageDataResponse<ProductCategory>>>() {
+                            @Override
+                            public BaseResponse<PageDataResponse<ProductCategory>> apply(@NonNull BaseResponse<PageDataResponse<ProductCategory>> response) throws Exception {
+                                if (response.isOK()) {
+                                    return response;
+                                } else {
+                                    throw new Exception(response.getMessage());
+                                }
+                            }
+                        })
+                        .retryWhen(RetryWithDelay.crate())
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(Schedulers.io());
+            }
+        });
     }
 
     public StoreTroncellApi getStoreApiService() throws Exception {
@@ -185,4 +167,6 @@ public class LocalService extends IntentService {
         StoreTroncellApi saasApiService = retrofit.create(StoreTroncellApi.class);
         return saasApiService;
     }
+
+
 }
