@@ -9,7 +9,7 @@ import java.util.List;
 public class ProductRootItem extends ProductBaseItem {
 
     private static final long serialVersionUID = -6594185873104815905L;
-    private List<ProductCategory> p_ProductCategories;
+    private List<ProductCategoryOnlyID> p_ProductCategories;
     private List<Object> productTags;
     private List<ProductSkuItem> skus;
     private boolean isFromBrand;
@@ -43,11 +43,11 @@ public class ProductRootItem extends ProductBaseItem {
 //    lastUpdated	"2017-06-03T23:37:00.7349884"
 //    orderNumber	0
 
-    public List<ProductCategory> getP_ProductCategories() {
+    public List<ProductCategoryOnlyID> getP_ProductCategories() {
         return p_ProductCategories;
     }
 
-    public void setP_ProductCategories(List<ProductCategory> p_ProductCategories) {
+    public void setP_ProductCategories(List<ProductCategoryOnlyID> p_ProductCategories) {
         this.p_ProductCategories = p_ProductCategories;
     }
 

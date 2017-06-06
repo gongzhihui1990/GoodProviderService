@@ -23,6 +23,7 @@ import koolpos.cn.goodproviderservice.constans.State;
 import koolpos.cn.goodproviderservice.constans.StateEnum;
 import koolpos.cn.goodproviderservice.model.BaseResponse;
 import koolpos.cn.goodproviderservice.model.PageDataResponse;
+import koolpos.cn.goodproviderservice.model.ProductCategory;
 import koolpos.cn.goodproviderservice.model.ProductRootItem;
 import koolpos.cn.goodproviderservice.util.Loger;
 import okhttp3.OkHttpClient;
@@ -42,28 +43,30 @@ public class LocalService extends IntentService {
     public LocalService(String name) {
         super(name);
     }
+
     public LocalService() {
         super("LocalService");
     }
 
     @Override
     protected void onHandleIntent(@Nullable Intent intent) {
-        String action ="";
-        if (intent!=null){
+        String action = "";
+        if (intent != null) {
             action = intent.getAction();
         }
-        Loger.d("onHandleIntent "+ action);
-        switch (action){
+        Loger.d("onHandleIntent " + action);
+        switch (action) {
             case Action.InitData:
                 initData(1);
                 break;
         }
     }
-    private void initData(final int timeDelay){
-        Loger.d("initData");
-        MyApplication.StateNow = new State(StateEnum.Progressing,"商品数据加载中");
 
-        Observable.timer(timeDelay,TimeUnit.SECONDS)
+    private void initData(final int timeDelay) {
+        Loger.d("initData");
+        MyApplication.StateNow = new State(StateEnum.Progressing, "所有商品数据加载中");
+
+        Observable.timer(timeDelay, TimeUnit.SECONDS)
                 .map(new Function<Long, StoreTroncellApi>() {
                     @Override
                     public StoreTroncellApi apply(@NonNull Long aLong) throws Exception {
@@ -84,15 +87,15 @@ public class LocalService extends IntentService {
                                     }
 
                                     @Override
-                                    public void onNext(BaseResponse<PageDataResponse<ProductRootItem>> pageDataResponseBaseResponse) {
-                                        Loger.d("pageDataResponseBaseResponse"+pageDataResponseBaseResponse.toString());
-                                        if (pageDataResponseBaseResponse.isOK()){
-
-                                        }else {
-                                            if (timeDelay>=30){
+                                    public void onNext(BaseResponse<PageDataResponse<ProductRootItem>> response) {
+                                        Loger.d("response ProductRootItem:" + response.toString());
+                                        if (response.isOK()) {
+                                            getCate(0);
+                                        } else {
+                                            if (timeDelay >= 30) {
                                                 initData(timeDelay);
-                                            }else {
-                                                int delay = timeDelay+1;
+                                            } else {
+                                                int delay = timeDelay + 1;
                                                 initData(delay);
                                             }
                                         }
@@ -111,6 +114,61 @@ public class LocalService extends IntentService {
                                 });
                     }
                 });
+    }
+
+    private void getCate(final int timeDelay) {
+        MyApplication.StateNow = new State(StateEnum.Progressing, "商品类型数据加载中");
+
+        Observable.timer(timeDelay, TimeUnit.SECONDS)
+                .map(new Function<Long, StoreTroncellApi>() {
+                    @Override
+                    public StoreTroncellApi apply(@NonNull Long aLong) throws Exception {
+                        return getStoreApiService();
+                    }
+                }).subscribeOn(Schedulers.io())
+                .observeOn(Schedulers.io())
+                .subscribe(new Consumer<StoreTroncellApi>() {
+                    @Override
+                    public void accept(@NonNull StoreTroncellApi storeTroncellApi) throws Exception {
+                        storeTroncellApi.getProductCategories(Constant.TestKey)
+                                .subscribeOn(Schedulers.io())
+                                .observeOn(Schedulers.io())
+                                .subscribe(new Observer<BaseResponse<PageDataResponse<ProductCategory>>>() {
+                                    @Override
+                                    public void onSubscribe(Disposable d) {
+
+                                    }
+
+                                    @Override
+                                    public void onNext(BaseResponse<PageDataResponse<ProductCategory>> response) {
+                                        Loger.d("response ProductCategory:" + response.toString());
+                                        if (response.isOK()) {
+                                            MyApplication.StateNow = new State(StateEnum.Progressing, "数据本地保存中");
+
+                                        } else {
+                                            if (timeDelay >= 30) {
+                                                initData(timeDelay);
+                                            } else {
+                                                int delay = timeDelay + 1;
+                                                initData(delay);
+                                            }
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onError(Throwable e) {
+                                        e.printStackTrace();
+                                    }
+
+                                    @Override
+                                    public void onComplete() {
+
+                                    }
+
+                                });
+                    }
+                });
+
     }
 
     public StoreTroncellApi getStoreApiService() throws Exception {
