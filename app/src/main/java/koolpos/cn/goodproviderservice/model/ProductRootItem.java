@@ -2,6 +2,8 @@ package koolpos.cn.goodproviderservice.model;
 
 import java.util.List;
 
+import koolpos.cn.goodproviderservice.mvcDao.GreenDaoInsert;
+
 /**
  * Created by Administrator on 2017/6/5.
  */
@@ -90,4 +92,5 @@ public class ProductRootItem extends ProductBaseItem {
     public void setSellerId(String sellerId) {
         this.sellerId = sellerId;
     }
+
 }

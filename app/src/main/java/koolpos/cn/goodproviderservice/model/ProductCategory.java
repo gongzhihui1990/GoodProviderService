@@ -1,12 +1,15 @@
 package koolpos.cn.goodproviderservice.model;
 
+import koolpos.cn.goodproviderservice.mvcDao.GreenDaoInsert;
+import koolpos.cn.goodproviderservice.mvcDao.greenDao.ProductCategoryDao;
+
 /**
  * Created by Administrator on 2017/6/5.
  */
 
-public class ProductCategory extends BaseBean{
+public class ProductCategory extends BaseBean implements GreenDaoInsert<ProductCategoryDao> {
     private static final long serialVersionUID = -8965713797831327632L;
-//    id	4
+    //    id	4
 //    categoryCode	"1289417787"
 //    name	"新品上市"
 //    parentCategory
@@ -16,7 +19,7 @@ public class ProductCategory extends BaseBean{
 //    isLocal	false
 //    isSpecial	false
 //    fromType	"Taobao"
-    private String id;
+    private long id;
 
     private String categoryCode;
     private String name;
@@ -24,15 +27,15 @@ public class ProductCategory extends BaseBean{
     private String groupId;
     private String imageUrl;
     private String iconUrl;
-    private String isLocal;
-    private String isSpecial;
+    private boolean isLocal;
+    private boolean isSpecial;
     private String fromType;
 
-    public String getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(long id) {
         this.id = id;
     }
 
@@ -84,19 +87,19 @@ public class ProductCategory extends BaseBean{
         this.iconUrl = iconUrl;
     }
 
-    public String getIsLocal() {
+    public boolean getIsLocal() {
         return isLocal;
     }
 
-    public void setIsLocal(String isLocal) {
+    public void setIsLocal(boolean isLocal) {
         this.isLocal = isLocal;
     }
 
-    public String getIsSpecial() {
+    public boolean getIsSpecial() {
         return isSpecial;
     }
 
-    public void setIsSpecial(String isSpecial) {
+    public void setIsSpecial(boolean isSpecial) {
         this.isSpecial = isSpecial;
     }
 
@@ -106,5 +109,12 @@ public class ProductCategory extends BaseBean{
 
     public void setFromType(String fromType) {
         this.fromType = fromType;
+    }
+
+    @Override
+    public void insert(ProductCategoryDao productCategoryDao) {
+        koolpos.cn.goodproviderservice.mvcDao.greenDao.ProductCategory entity
+                = koolpos.cn.goodproviderservice.mvcDao.greenDao.ProductCategory.create(id, categoryCode, name,groupId, imageUrl, iconUrl, isLocal, isSpecial, fromType);
+        productCategoryDao.insertOrReplace(entity);
     }
 }

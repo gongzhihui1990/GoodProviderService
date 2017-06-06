@@ -6,6 +6,7 @@ import android.support.annotation.Nullable;
 
 import com.jakewharton.retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import io.reactivex.Observable;
@@ -25,6 +26,7 @@ import koolpos.cn.goodproviderservice.model.BaseResponse;
 import koolpos.cn.goodproviderservice.model.PageDataResponse;
 import koolpos.cn.goodproviderservice.model.ProductCategory;
 import koolpos.cn.goodproviderservice.model.ProductRootItem;
+import koolpos.cn.goodproviderservice.mvcDao.greenDao.ProductCategoryDao;
 import koolpos.cn.goodproviderservice.rx.RetryWithDelay;
 import koolpos.cn.goodproviderservice.util.Loger;
 import okhttp3.OkHttpClient;
@@ -64,10 +66,17 @@ public class LocalService extends IntentService {
                     @Override
                     public Boolean apply(@NonNull BaseResponse<PageDataResponse<ProductRootItem>> allProducts, @NonNull BaseResponse<PageDataResponse<ProductCategory>> allCategory) throws Exception {
                         Loger.d("数据全部下载，开始写数据库");
-                        Loger.d("allProducts:"+allProducts.getData().toString());
-                        Loger.d("allCategory:"+allCategory.getData().toString());
+//                        Loger.d("allProducts:"+allProducts.getData().toString());
+//                        Loger.d("allCategory:"+allCategory.getData().toString());
+                        List<ProductCategory> categories = allCategory.getData().getData();
+                        ProductCategoryDao productCategoryDao =MyApplication.getDaoSession().getProductCategoryDao();
+                        for (ProductCategory category :categories){
+                            category.insert(productCategoryDao);
+                        }
+//                        loadProductsInDB(allProducts);
+//                        loadCategoryInDB(allProducts);
 
-                        return false;
+                        return true;
                     }
                 }).subscribeOn(Schedulers.io())
                         .observeOn(Schedulers.io())
@@ -75,6 +84,8 @@ public class LocalService extends IntentService {
                             @Override
                             public void accept(@NonNull Boolean aBoolean) throws Exception {
                                 Loger.d("数据库写成功？"+aBoolean);
+                                ProductCategoryDao productCategoryDao =MyApplication.getDaoSession().getProductCategoryDao();
+                                Loger.d("所有类型数量:"+productCategoryDao.queryBuilder().count());
                             }
                         });
                 break;
