@@ -27,7 +27,9 @@ import koolpos.cn.goodproviderservice.model.BaseResponse;
 import koolpos.cn.goodproviderservice.model.PageDataResponse;
 import koolpos.cn.goodproviderservice.model.ProductCategoryBean;
 import koolpos.cn.goodproviderservice.model.ProductRootItem;
+import koolpos.cn.goodproviderservice.mvcDao.greenDao.Product;
 import koolpos.cn.goodproviderservice.mvcDao.greenDao.ProductCategoryDao;
+import koolpos.cn.goodproviderservice.mvcDao.greenDao.ProductDao;
 import koolpos.cn.goodproviderservice.rx.RetryWithDelay;
 import koolpos.cn.goodproviderservice.util.Loger;
 import okhttp3.OkHttpClient;
@@ -79,7 +81,11 @@ public class LocalService extends IntentService {
                         }
                         List<ProductRootItem> products = allProducts.getData().getData();
                         if (products.size()!=0){
-
+                            ProductDao productDao = MyApplication.getDaoSession().getProductDao();
+                            productDao.deleteAll();
+                            for (ProductRootItem product :products){
+                                product.insert(productDao);//写入新的数据
+                            }
                         }
 
 

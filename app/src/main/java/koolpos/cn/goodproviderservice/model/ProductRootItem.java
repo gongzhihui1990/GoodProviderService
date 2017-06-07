@@ -3,12 +3,14 @@ package koolpos.cn.goodproviderservice.model;
 import java.util.List;
 
 import koolpos.cn.goodproviderservice.mvcDao.GreenDaoInsert;
+import koolpos.cn.goodproviderservice.mvcDao.greenDao.Product;
+import koolpos.cn.goodproviderservice.mvcDao.greenDao.ProductDao;
 
 /**
  * Created by Administrator on 2017/6/5.
  */
 
-public class ProductRootItem extends ProductBaseItem {
+public class ProductRootItem extends ProductBaseItem implements GreenDaoInsert<ProductDao>{
 
     private static final long serialVersionUID = -6594185873104815905L;
     private List<ProductCategoryOnlyID> p_ProductCategories;
@@ -93,4 +95,16 @@ public class ProductRootItem extends ProductBaseItem {
         this.sellerId = sellerId;
     }
 
+    @Override
+    public void insert(ProductDao productDao) {
+        if (skus!=null&&skus.size()!=0){
+            for(ProductSkuItem item :skus){
+                item.setProductCategoryIDs(p_ProductCategories);
+                item.insert(productDao);
+            }
+        }else {
+
+        }
+
+    }
 }

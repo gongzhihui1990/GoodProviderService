@@ -23,22 +23,39 @@ public class Product implements Serializable {
     @Id
     private Long id;
 
+    private String title;
     private String price;
+    private String picUrl;
+    private boolean hasSelfImage;
     private String qrCodeUrl;
     private String groupId;
     @Convert(converter =CategoryIDs.class, columnType = String.class)
     private List<Integer> productCategoryIDs;
-    @Generated(hash = 20684151)
-    public Product(Long id, String price, String qrCodeUrl, String groupId,
-            List<Integer> productCategoryIDs) {
+    @Generated(hash = 880660975)
+    public Product(Long id, String title, String price, String picUrl, boolean hasSelfImage,
+            String qrCodeUrl, String groupId, List<Integer> productCategoryIDs) {
         this.id = id;
+        this.title = title;
         this.price = price;
+        this.picUrl = picUrl;
+        this.hasSelfImage = hasSelfImage;
         this.qrCodeUrl = qrCodeUrl;
         this.groupId = groupId;
         this.productCategoryIDs = productCategoryIDs;
     }
     @Generated(hash = 1890278724)
     public Product() {
+    }
+    public static Product create(String title,String price,String picUrl,boolean hasSelfImage,String qrCodeUrl,String groupId,List<Integer> productCategoryIDs){
+        Product product=new Product();
+        product.title= title;
+        product.price= price;
+        product.picUrl = picUrl;
+        product.hasSelfImage = hasSelfImage;
+        product.qrCodeUrl = qrCodeUrl;
+        product.groupId = groupId;
+        product.productCategoryIDs = productCategoryIDs;
+        return product;
     }
     public static class CategoryIDs implements PropertyConverter<List<Integer>, String> {
 
@@ -108,5 +125,23 @@ public class Product implements Serializable {
     }
     public void setProductCategoryIDs(List<Integer> productCategoryIDs) {
         this.productCategoryIDs = productCategoryIDs;
+    }
+    public String getPicUrl() {
+        return this.picUrl;
+    }
+    public void setPicUrl(String picUrl) {
+        this.picUrl = picUrl;
+    }
+    public boolean getHasSelfImage() {
+        return this.hasSelfImage;
+    }
+    public void setHasSelfImage(boolean hasSelfImage) {
+        this.hasSelfImage = hasSelfImage;
+    }
+    public String getTitle() {
+        return this.title;
+    }
+    public void setTitle(String title) {
+        this.title = title;
     }
 }

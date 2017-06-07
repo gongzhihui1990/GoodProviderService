@@ -6,13 +6,13 @@ package koolpos.cn.goodproviderservice.model;
 
 public class ProductCategoryOnlyID extends BaseBean{
     private static final long serialVersionUID = -3763818201907270911L;
-    private String id;
+    private int id;
 
-    public String getId() {
+    public int getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(int id) {
         this.id = id;
     }
 }
