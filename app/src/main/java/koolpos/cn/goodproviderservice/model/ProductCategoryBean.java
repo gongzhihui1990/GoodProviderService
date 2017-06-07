@@ -112,16 +112,13 @@ public class ProductCategoryBean extends BaseBean implements GreenDaoInsert<Prod
         this.fromType = fromType;
     }
 
-    public String getParentCategoryCode() {
-        return parentCategoryCode;
-    }
 
-    public void setParentCategoryCode(String parentCategoryCode) {
-        this.parentCategoryCode = parentCategoryCode;
-    }
 
     @Override
     public void insert(ProductCategoryDao productCategoryDao) {
+        if (parentCategory!=null){
+            parentCategoryCode=parentCategory.getCategoryCode();
+        }
         koolpos.cn.goodproviderservice.mvcDao.greenDao.ProductCategory entity
                 = koolpos.cn.goodproviderservice.mvcDao.greenDao.ProductCategory.create(id, categoryCode, name,groupId, imageUrl, iconUrl, isLocal, isSpecial, fromType,parentCategoryCode);
         productCategoryDao.insertOrReplace(entity);
