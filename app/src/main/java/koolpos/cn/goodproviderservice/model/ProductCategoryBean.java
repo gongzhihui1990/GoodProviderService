@@ -7,7 +7,7 @@ import koolpos.cn.goodproviderservice.mvcDao.greenDao.ProductCategoryDao;
  * Created by Administrator on 2017/6/5.
  */
 
-public class ProductCategory extends BaseBean implements GreenDaoInsert<ProductCategoryDao> {
+public class ProductCategoryBean extends BaseBean implements GreenDaoInsert<ProductCategoryDao> {
     private static final long serialVersionUID = -8965713797831327632L;
     //    id	4
 //    categoryCode	"1289417787"
@@ -19,11 +19,12 @@ public class ProductCategory extends BaseBean implements GreenDaoInsert<ProductC
 //    isLocal	false
 //    isSpecial	false
 //    fromType	"Taobao"
-    private long id;
+    private int id;
 
     private String categoryCode;
+    private String parentCategoryCode;
     private String name;
-    private ProductCategory parentCategory;
+    private ProductCategoryBean parentCategory;
     private String groupId;
     private String imageUrl;
     private String iconUrl;
@@ -35,7 +36,7 @@ public class ProductCategory extends BaseBean implements GreenDaoInsert<ProductC
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(int id) {
         this.id = id;
     }
 
@@ -55,11 +56,11 @@ public class ProductCategory extends BaseBean implements GreenDaoInsert<ProductC
         this.name = name;
     }
 
-    public ProductCategory getParentCategory() {
+    public ProductCategoryBean getParentCategory() {
         return parentCategory;
     }
 
-    public void setParentCategory(ProductCategory parentCategory) {
+    public void setParentCategory(ProductCategoryBean parentCategory) {
         this.parentCategory = parentCategory;
     }
 
@@ -111,10 +112,18 @@ public class ProductCategory extends BaseBean implements GreenDaoInsert<ProductC
         this.fromType = fromType;
     }
 
+    public String getParentCategoryCode() {
+        return parentCategoryCode;
+    }
+
+    public void setParentCategoryCode(String parentCategoryCode) {
+        this.parentCategoryCode = parentCategoryCode;
+    }
+
     @Override
     public void insert(ProductCategoryDao productCategoryDao) {
         koolpos.cn.goodproviderservice.mvcDao.greenDao.ProductCategory entity
-                = koolpos.cn.goodproviderservice.mvcDao.greenDao.ProductCategory.create(id, categoryCode, name,groupId, imageUrl, iconUrl, isLocal, isSpecial, fromType);
+                = koolpos.cn.goodproviderservice.mvcDao.greenDao.ProductCategory.create(id, categoryCode, name,groupId, imageUrl, iconUrl, isLocal, isSpecial, fromType,parentCategoryCode);
         productCategoryDao.insertOrReplace(entity);
     }
 }

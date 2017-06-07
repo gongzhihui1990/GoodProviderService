@@ -1,10 +1,14 @@
 package koolpos.cn.goodproviderservice.mvcDao.greenDao;
 
+import android.support.annotation.NonNull;
+
 import org.greenrobot.greendao.annotation.Entity;
 import org.greenrobot.greendao.annotation.Id;
 
 import java.io.Serializable;
 import org.greenrobot.greendao.annotation.Generated;
+import org.greenrobot.greendao.annotation.Index;
+import org.greenrobot.greendao.annotation.Unique;
 
 /**
  * Created by caroline on 2017/6/6.
@@ -16,20 +20,41 @@ public class ProductCategory implements Serializable {
     private Long id;
 
     private String categoryCode;
+    private int categoryId;
     private String name;
-//    private koolpos.cn.goodproviderservice.model.ProductCategory parentCategory;
+    private String parentCategoryCode;
     private String groupId;
     private String imageUrl;
     private String iconUrl;
     private boolean isLocal;
     private boolean isSpecial;
     private String fromType;
+
+    @Generated(hash = 55688381)
+    public ProductCategory(Long id, String categoryCode, int categoryId, String name,
+            String parentCategoryCode, String groupId, String imageUrl, String iconUrl,
+            boolean isLocal, boolean isSpecial, String fromType) {
+        this.id = id;
+        this.categoryCode = categoryCode;
+        this.categoryId = categoryId;
+        this.name = name;
+        this.parentCategoryCode = parentCategoryCode;
+        this.groupId = groupId;
+        this.imageUrl = imageUrl;
+        this.iconUrl = iconUrl;
+        this.isLocal = isLocal;
+        this.isSpecial = isSpecial;
+        this.fromType = fromType;
+    }
+    @Generated(hash = 587827635)
+    public ProductCategory() {
+    }
     
-    public static ProductCategory create(Long id, String categoryCode, String name,
+    public static ProductCategory create(int categoryId, String categoryCode, String name,
                            String groupId, String imageUrl, String iconUrl, boolean isLocal,
-                           boolean isSpecial, String fromType) {
+                           boolean isSpecial, String fromType,String parentCategoryCode) {
         ProductCategory category =new ProductCategory();
-        category.id = id;
+        category.categoryId = categoryId;
         category.categoryCode = categoryCode;
         category.name = name;
         category.groupId = groupId;
@@ -38,24 +63,8 @@ public class ProductCategory implements Serializable {
         category.isLocal = isLocal;
         category.isSpecial = isSpecial;
         category.fromType = fromType;
+        category.parentCategoryCode = parentCategoryCode;
         return category;
-    }
-    @Generated(hash = 587827635)
-    public ProductCategory() {
-    }
-    @Generated(hash = 1291516557)
-    public ProductCategory(Long id, String categoryCode, String name, String groupId,
-            String imageUrl, String iconUrl, boolean isLocal, boolean isSpecial,
-            String fromType) {
-        this.id = id;
-        this.categoryCode = categoryCode;
-        this.name = name;
-        this.groupId = groupId;
-        this.imageUrl = imageUrl;
-        this.iconUrl = iconUrl;
-        this.isLocal = isLocal;
-        this.isSpecial = isSpecial;
-        this.fromType = fromType;
     }
     public Long getId() {
         return this.id;
@@ -110,6 +119,18 @@ public class ProductCategory implements Serializable {
     }
     public void setFromType(String fromType) {
         this.fromType = fromType;
+    }
+    public int getCategoryId() {
+        return this.categoryId;
+    }
+    public void setCategoryId(int categoryId) {
+        this.categoryId = categoryId;
+    }
+    public String getParentCategoryCode() {
+        return this.parentCategoryCode;
+    }
+    public void setParentCategoryCode(String parentCategoryCode) {
+        this.parentCategoryCode = parentCategoryCode;
     }
 
 

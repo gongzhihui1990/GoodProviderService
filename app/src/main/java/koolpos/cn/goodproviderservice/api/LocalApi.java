@@ -8,11 +8,14 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.reactivex.Observable;
 import koolpos.cn.goodproviderservice.MyApplication;
 import koolpos.cn.goodproviderservice.constans.State;
 import koolpos.cn.goodproviderservice.constans.StateEnum;
+import koolpos.cn.goodproviderservice.model.ProductCategoryBean;
 import koolpos.cn.goodproviderservice.mvcDao.greenDao.Goods;
 import koolpos.cn.goodproviderservice.mvcDao.greenDao.GoodsDao;
+import koolpos.cn.goodproviderservice.mvcDao.greenDao.ProductCategory;
 import koolpos.cn.goodproviderservice.util.Loger;
 
 /**
@@ -35,11 +38,14 @@ public class LocalApi {
         }
         String action = reqJson.optString("action");
         switch (action){
+            case "local/get/category":
+                response.setData(getCategory());
+                break;
             case "local/get/appState":
                 response.setData(getAppState().getMessage());
-                break;
+            break;
             case "local/get/all":
-                response.setData(getAll());
+            response.setData(getAll());
                 break;
             case "local/get/getTypeList":
                 response.setData(getTypeList());
@@ -67,9 +73,6 @@ public class LocalApi {
     }
 
     private static String getTypeList() {
-//        ery query = userDao.queryRawCreate(
-//                ", GROUP G WHERE G.NAME=? AND T.GROUP_ID=G._ID", "admin");
-
         ArrayList<String> typeList=new ArrayList<>();
         List<Goods> list=MyApplication.getDaoSession().getGoodsDao()
         .queryBuilder().where(new WhereCondition.StringCondition("1 GROUP BY "+GoodsDao.Properties.Goods_type.name))
@@ -79,5 +82,17 @@ public class LocalApi {
             typeList.add(item.getGoods_type());
         }
         return new Gson().toJson(typeList);
+    }
+
+    public static String getCategory() {
+        ArrayList<ProductCategory> categoryList=new ArrayList<>();
+        List<ProductCategory> list =MyApplication.getDaoSession().getProductCategoryDao()
+                .queryBuilder().list();
+        for (ProductCategory item:list) {
+            if (item.getParentCategoryCode()==null){
+                categoryList.add(item);
+            }
+        }
+        return new Gson().toJson(categoryList);
     }
 }

@@ -17,6 +17,7 @@ import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
 import koolpos.cn.goodproviderservice.MyApplication;
+import koolpos.cn.goodproviderservice.api.LocalApi;
 import koolpos.cn.goodproviderservice.api.StoreTroncellApi;
 import koolpos.cn.goodproviderservice.constans.Action;
 import koolpos.cn.goodproviderservice.constans.Constant;
@@ -24,7 +25,7 @@ import koolpos.cn.goodproviderservice.constans.State;
 import koolpos.cn.goodproviderservice.constans.StateEnum;
 import koolpos.cn.goodproviderservice.model.BaseResponse;
 import koolpos.cn.goodproviderservice.model.PageDataResponse;
-import koolpos.cn.goodproviderservice.model.ProductCategory;
+import koolpos.cn.goodproviderservice.model.ProductCategoryBean;
 import koolpos.cn.goodproviderservice.model.ProductRootItem;
 import koolpos.cn.goodproviderservice.mvcDao.greenDao.ProductCategoryDao;
 import koolpos.cn.goodproviderservice.rx.RetryWithDelay;
@@ -61,20 +62,26 @@ public class LocalService extends IntentService {
         switch (action) {
             case Action.InitData:
                 Observable<BaseResponse<PageDataResponse<ProductRootItem>>> productsObs = getAllProducts();
-                Observable<BaseResponse<PageDataResponse<ProductCategory>>> categoryObs = getCategory();
-                Observable.zip(productsObs, categoryObs, new BiFunction<BaseResponse<PageDataResponse<ProductRootItem>>, BaseResponse<PageDataResponse<ProductCategory>>, Boolean>() {
+                Observable<BaseResponse<PageDataResponse<ProductCategoryBean>>> categoryObs = getCategory();
+                Observable.zip(productsObs, categoryObs, new BiFunction<BaseResponse<PageDataResponse<ProductRootItem>>, BaseResponse<PageDataResponse<ProductCategoryBean>>, Boolean>() {
                     @Override
-                    public Boolean apply(@NonNull BaseResponse<PageDataResponse<ProductRootItem>> allProducts, @NonNull BaseResponse<PageDataResponse<ProductCategory>> allCategory) throws Exception {
+                    public Boolean apply(@NonNull BaseResponse<PageDataResponse<ProductRootItem>> allProducts, @NonNull BaseResponse<PageDataResponse<ProductCategoryBean>> allCategory) throws Exception {
                         Loger.d("数据全部下载，开始写数据库");
 //                        Loger.d("allProducts:"+allProducts.getData().toString());
 //                        Loger.d("allCategory:"+allCategory.getData().toString());
-                        List<ProductCategory> categories = allCategory.getData().getData();
-                        ProductCategoryDao productCategoryDao =MyApplication.getDaoSession().getProductCategoryDao();
-                        for (ProductCategory category :categories){
-                            category.insert(productCategoryDao);
+                        List<ProductCategoryBean> categories = allCategory.getData().getData();
+                        if (categories.size()!=0){
+                            ProductCategoryDao productCategoryDao =MyApplication.getDaoSession().getProductCategoryDao();
+                            productCategoryDao.deleteAll();//清除旧的数据
+                            for (ProductCategoryBean category :categories){
+                                category.insert(productCategoryDao);//写入新的数据
+                            }
                         }
-//                        loadProductsInDB(allProducts);
-//                        loadCategoryInDB(allProducts);
+                        List<ProductRootItem> products = allProducts.getData().getData();
+                        if (products.size()!=0){
+
+                        }
+
 
                         return true;
                     }
@@ -86,6 +93,7 @@ public class LocalService extends IntentService {
                                 Loger.d("数据库写成功？"+aBoolean);
                                 ProductCategoryDao productCategoryDao =MyApplication.getDaoSession().getProductCategoryDao();
                                 Loger.d("所有类型数量:"+productCategoryDao.queryBuilder().count());
+                                Loger.d("所有可显示类型数量:"+ LocalApi.getCategory().length());
                             }
                         });
                 break;
@@ -132,7 +140,7 @@ public class LocalService extends IntentService {
      * getCategory from net
      * @return
      */
-    private Observable<BaseResponse<PageDataResponse<ProductCategory>>> getCategory() {
+    private Observable<BaseResponse<PageDataResponse<ProductCategoryBean>>> getCategory() {
         Loger.d("商品类型数据加载中");
         MyApplication.StateNow = new State(StateEnum.Progressing, "商品类型数据加载中");
        return Observable.timer(1, TimeUnit.SECONDS)
@@ -143,13 +151,13 @@ public class LocalService extends IntentService {
                     public StoreTroncellApi apply(@NonNull Long aLong) throws Exception {
                         return getStoreApiService();
                     }
-                }).flatMap(new Function<StoreTroncellApi, ObservableSource<BaseResponse<PageDataResponse<ProductCategory>>>>() {
+                }).flatMap(new Function<StoreTroncellApi, ObservableSource<BaseResponse<PageDataResponse<ProductCategoryBean>>>>() {
             @Override
-            public ObservableSource<BaseResponse<PageDataResponse<ProductCategory>>> apply(@NonNull StoreTroncellApi storeTroncellApi) throws Exception {
+            public ObservableSource<BaseResponse<PageDataResponse<ProductCategoryBean>>> apply(@NonNull StoreTroncellApi storeTroncellApi) throws Exception {
                 return  storeTroncellApi.getProductCategories(Constant.TestKey)
-                        .map(new Function<BaseResponse<PageDataResponse<ProductCategory>>, BaseResponse<PageDataResponse<ProductCategory>>>() {
+                        .map(new Function<BaseResponse<PageDataResponse<ProductCategoryBean>>, BaseResponse<PageDataResponse<ProductCategoryBean>>>() {
                             @Override
-                            public BaseResponse<PageDataResponse<ProductCategory>> apply(@NonNull BaseResponse<PageDataResponse<ProductCategory>> response) throws Exception {
+                            public BaseResponse<PageDataResponse<ProductCategoryBean>> apply(@NonNull BaseResponse<PageDataResponse<ProductCategoryBean>> response) throws Exception {
                                 if (response.isOK()) {
                                     return response;
                                 } else {
