@@ -4,8 +4,12 @@ import android.app.IntentService;
 import android.content.Intent;
 import android.support.annotation.Nullable;
 
+import com.google.gson.Gson;
 import com.jakewharton.retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 
+import org.greenrobot.greendao.query.QueryBuilder;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -28,6 +32,7 @@ import koolpos.cn.goodproviderservice.model.PageDataResponse;
 import koolpos.cn.goodproviderservice.model.ProductCategoryBean;
 import koolpos.cn.goodproviderservice.model.ProductRootItem;
 import koolpos.cn.goodproviderservice.mvcDao.greenDao.Product;
+import koolpos.cn.goodproviderservice.mvcDao.greenDao.ProductCategory;
 import koolpos.cn.goodproviderservice.mvcDao.greenDao.ProductCategoryDao;
 import koolpos.cn.goodproviderservice.mvcDao.greenDao.ProductDao;
 import koolpos.cn.goodproviderservice.rx.RetryWithDelay;
@@ -72,18 +77,18 @@ public class LocalService extends IntentService {
 //                        Loger.d("allProducts:"+allProducts.getData().toString());
 //                        Loger.d("allCategory:"+allCategory.getData().toString());
                         List<ProductCategoryBean> categories = allCategory.getData().getData();
-                        if (categories.size()!=0){
-                            ProductCategoryDao productCategoryDao =MyApplication.getDaoSession().getProductCategoryDao();
+                        if (categories.size() != 0) {
+                            ProductCategoryDao productCategoryDao = MyApplication.getDaoSession().getProductCategoryDao();
                             productCategoryDao.deleteAll();//清除旧的数据
-                            for (ProductCategoryBean category :categories){
+                            for (ProductCategoryBean category : categories) {
                                 category.insert(productCategoryDao);//写入新的数据
                             }
                         }
                         List<ProductRootItem> products = allProducts.getData().getData();
-                        if (products.size()!=0){
+                        if (products.size() != 0) {
                             ProductDao productDao = MyApplication.getDaoSession().getProductDao();
                             productDao.deleteAll();
-                            for (ProductRootItem product :products){
+                            for (ProductRootItem product : products) {
                                 product.insert(productDao);//写入新的数据
                             }
                         }
@@ -96,10 +101,59 @@ public class LocalService extends IntentService {
                         .subscribe(new Consumer<Boolean>() {
                             @Override
                             public void accept(@NonNull Boolean aBoolean) throws Exception {
-                                Loger.d("数据库写成功？"+aBoolean);
-                                ProductCategoryDao productCategoryDao =MyApplication.getDaoSession().getProductCategoryDao();
-                                Loger.d("所有类型数量:"+productCategoryDao.queryBuilder().count());
-                                Loger.d("所有可显示类型数量:"+ LocalApi.getCategory().length());
+                                Loger.d("数据库写成功？" + aBoolean);
+                                //Loger.d("所有可显示类型:"+ LocalApi.getCategory().toString());
+                                ProductDao productDao = MyApplication.getDaoSession().getProductDao();
+                                Loger.d("所有商品数量:" + productDao.queryBuilder().count());
+
+                                for (Product product : productDao.queryBuilder().list()) {
+                                    List<Integer> cats = product.getProductCategoryIDs();
+                                    if (cats != null && cats.size() != 0) {
+                                        String catStr = "";
+                                        for (Integer cat : cats) {
+                                            catStr += "," + cat;
+                                        }
+                                        Loger.d("product:" + product.getId() + "-" + catStr);
+                                    } else {
+                                        Loger.e("product:" + product.getId() + "-no cate");
+                                    }
+                                }
+                                ProductCategoryDao productCategoryDao = MyApplication.getDaoSession().getProductCategoryDao();
+                                Loger.d("所有类型数量:" + productCategoryDao.queryBuilder().count());
+                                List<ProductCategory> categories = productCategoryDao.queryBuilder().list();
+                                for (ProductCategory category : categories) {
+                                    if (category.getParentCategoryCode() == null) {
+                                        List<Integer> categoryIds=new ArrayList<Integer>();
+                                        int categoryId = category.getCategoryId();
+                                        categoryIds.add(categoryId);
+                                        Loger.d("categoryId:" + categoryId);
+                                        List<ProductCategory> categoryChildList = productCategoryDao.queryBuilder().where(ProductCategoryDao.Properties.ParentCategoryId.eq(categoryId)).list();
+                                        if (categoryChildList != null && categoryChildList.size() != 0) {
+                                            String cd = "";
+                                            for (ProductCategory childCategory : categoryChildList) {
+                                                cd += "," + childCategory.getCategoryId();
+                                                categoryIds.add(childCategory.getCategoryId());
+                                            }
+                                            Loger.e(categoryId + "'s categoryChildList:" + categoryChildList.size() + "  :" + cd);
+
+                                        }
+                                        List<Product> allProduct= productDao.queryBuilder().list();
+                                        List<Product> inCategoryProducts = new ArrayList<Product>();
+
+                                        for (Product product:allProduct){
+                                            for (int id: categoryIds) {
+                                                if (product.getProductCategoryIDs()!=null&&
+                                                        product.getProductCategoryIDs().contains(id)){
+                                                    inCategoryProducts.add(product);
+                                                    break;
+                                                }
+                                            }
+                                        }
+
+                                        Loger.d("CategoryId-" + categoryId + "-size-" + inCategoryProducts.size());
+                                    }
+                                }
+
                             }
                         });
                 break;
@@ -108,6 +162,7 @@ public class LocalService extends IntentService {
 
     /**
      * getAllProducts from net
+     *
      * @return
      */
     private Observable<BaseResponse<PageDataResponse<ProductRootItem>>> getAllProducts() {
@@ -144,12 +199,13 @@ public class LocalService extends IntentService {
 
     /**
      * getCategory from net
+     *
      * @return
      */
     private Observable<BaseResponse<PageDataResponse<ProductCategoryBean>>> getCategory() {
         Loger.d("商品类型数据加载中");
         MyApplication.StateNow = new State(StateEnum.Progressing, "商品类型数据加载中");
-       return Observable.timer(1, TimeUnit.SECONDS)
+        return Observable.timer(1, TimeUnit.SECONDS)
                 .subscribeOn(Schedulers.io())
                 .observeOn(Schedulers.io())
                 .map(new Function<Long, StoreTroncellApi>() {
@@ -158,24 +214,24 @@ public class LocalService extends IntentService {
                         return getStoreApiService();
                     }
                 }).flatMap(new Function<StoreTroncellApi, ObservableSource<BaseResponse<PageDataResponse<ProductCategoryBean>>>>() {
-            @Override
-            public ObservableSource<BaseResponse<PageDataResponse<ProductCategoryBean>>> apply(@NonNull StoreTroncellApi storeTroncellApi) throws Exception {
-                return  storeTroncellApi.getProductCategories(Constant.TestKey)
-                        .map(new Function<BaseResponse<PageDataResponse<ProductCategoryBean>>, BaseResponse<PageDataResponse<ProductCategoryBean>>>() {
-                            @Override
-                            public BaseResponse<PageDataResponse<ProductCategoryBean>> apply(@NonNull BaseResponse<PageDataResponse<ProductCategoryBean>> response) throws Exception {
-                                if (response.isOK()) {
-                                    return response;
-                                } else {
-                                    throw new Exception(response.getMessage());
-                                }
-                            }
-                        })
-                        .retryWhen(RetryWithDelay.crate())
-                        .subscribeOn(Schedulers.io())
-                        .observeOn(Schedulers.io());
-            }
-        });
+                    @Override
+                    public ObservableSource<BaseResponse<PageDataResponse<ProductCategoryBean>>> apply(@NonNull StoreTroncellApi storeTroncellApi) throws Exception {
+                        return storeTroncellApi.getProductCategories(Constant.TestKey)
+                                .map(new Function<BaseResponse<PageDataResponse<ProductCategoryBean>>, BaseResponse<PageDataResponse<ProductCategoryBean>>>() {
+                                    @Override
+                                    public BaseResponse<PageDataResponse<ProductCategoryBean>> apply(@NonNull BaseResponse<PageDataResponse<ProductCategoryBean>> response) throws Exception {
+                                        if (response.isOK()) {
+                                            return response;
+                                        } else {
+                                            throw new Exception(response.getMessage());
+                                        }
+                                    }
+                                })
+                                .retryWhen(RetryWithDelay.crate())
+                                .subscribeOn(Schedulers.io())
+                                .observeOn(Schedulers.io());
+                    }
+                });
     }
 
     public StoreTroncellApi getStoreApiService() throws Exception {

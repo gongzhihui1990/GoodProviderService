@@ -88,11 +88,15 @@ public class LocalApi {
         ArrayList<ProductCategory> categoryList=new ArrayList<>();
         List<ProductCategory> list =MyApplication.getDaoSession().getProductCategoryDao()
                 .queryBuilder().list();
+        Loger.e("all size:"+list.size());
         for (ProductCategory item:list) {
             if (item.getParentCategoryCode()==null){
                 categoryList.add(item);
+                Loger.d("add :"+item.getCategoryCode());
             }
         }
+        Loger.e("all root size:"+categoryList.size());
+
         return new Gson().toJson(categoryList);
     }
 }

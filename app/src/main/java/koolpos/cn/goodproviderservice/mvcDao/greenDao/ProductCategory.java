@@ -22,6 +22,7 @@ public class ProductCategory implements Serializable {
     private String categoryCode;
     private int categoryId;
     private String name;
+    private int parentCategoryId;
     private String parentCategoryCode;
     private String groupId;
     private String imageUrl;
@@ -30,14 +31,15 @@ public class ProductCategory implements Serializable {
     private boolean isSpecial;
     private String fromType;
 
-    @Generated(hash = 55688381)
-    public ProductCategory(Long id, String categoryCode, int categoryId, String name,
-            String parentCategoryCode, String groupId, String imageUrl, String iconUrl,
-            boolean isLocal, boolean isSpecial, String fromType) {
+    @Generated(hash = 2001103261)
+    public ProductCategory(Long id, String categoryCode, int categoryId, String name, int parentCategoryId,
+            String parentCategoryCode, String groupId, String imageUrl, String iconUrl, boolean isLocal,
+            boolean isSpecial, String fromType) {
         this.id = id;
         this.categoryCode = categoryCode;
         this.categoryId = categoryId;
         this.name = name;
+        this.parentCategoryId = parentCategoryId;
         this.parentCategoryCode = parentCategoryCode;
         this.groupId = groupId;
         this.imageUrl = imageUrl;
@@ -52,7 +54,7 @@ public class ProductCategory implements Serializable {
     
     public static ProductCategory create(int categoryId, String categoryCode, String name,
                            String groupId, String imageUrl, String iconUrl, boolean isLocal,
-                           boolean isSpecial, String fromType,String parentCategoryCode) {
+                           boolean isSpecial, String fromType,int parentCategoryId,String parentCategoryCode) {
         ProductCategory category =new ProductCategory();
         category.categoryId = categoryId;
         category.categoryCode = categoryCode;
@@ -63,6 +65,7 @@ public class ProductCategory implements Serializable {
         category.isLocal = isLocal;
         category.isSpecial = isSpecial;
         category.fromType = fromType;
+        category.parentCategoryId = parentCategoryId;
         category.parentCategoryCode = parentCategoryCode;
         return category;
     }
@@ -131,6 +134,12 @@ public class ProductCategory implements Serializable {
     }
     public void setParentCategoryCode(String parentCategoryCode) {
         this.parentCategoryCode = parentCategoryCode;
+    }
+    public int getParentCategoryId() {
+        return this.parentCategoryId;
+    }
+    public void setParentCategoryId(int parentCategoryId) {
+        this.parentCategoryId = parentCategoryId;
     }
 
 

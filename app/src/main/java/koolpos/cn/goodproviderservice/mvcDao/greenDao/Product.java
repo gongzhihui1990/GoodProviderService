@@ -65,7 +65,11 @@ public class Product implements Serializable {
                 String[] array= databaseValue.split(",");
                 List<Integer> ids=new ArrayList<>();
                 for (String id: array) {
-                    ids.add(Integer.valueOf(id));
+                    try{
+                        ids.add(Integer.valueOf(id));
+                    }catch (Exception e){
+
+                    }
                 }
                 return ids;
             }

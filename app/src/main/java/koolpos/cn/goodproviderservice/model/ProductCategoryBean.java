@@ -23,6 +23,7 @@ public class ProductCategoryBean extends BaseBean implements GreenDaoInsert<Prod
 
     private String categoryCode;
     private String parentCategoryCode;
+    private int parentCategoryId;
     private String name;
     private ProductCategoryBean parentCategory;
     private String groupId;
@@ -32,7 +33,7 @@ public class ProductCategoryBean extends BaseBean implements GreenDaoInsert<Prod
     private boolean isSpecial;
     private String fromType;
 
-    public long getId() {
+    public int getId() {
         return id;
     }
 
@@ -116,11 +117,13 @@ public class ProductCategoryBean extends BaseBean implements GreenDaoInsert<Prod
 
     @Override
     public void insert(ProductCategoryDao productCategoryDao) {
+
         if (parentCategory!=null){
+            parentCategoryId=parentCategory.getId();
             parentCategoryCode=parentCategory.getCategoryCode();
         }
         koolpos.cn.goodproviderservice.mvcDao.greenDao.ProductCategory entity
-                = koolpos.cn.goodproviderservice.mvcDao.greenDao.ProductCategory.create(id, categoryCode, name,groupId, imageUrl, iconUrl, isLocal, isSpecial, fromType,parentCategoryCode);
+                = koolpos.cn.goodproviderservice.mvcDao.greenDao.ProductCategory.create(id, categoryCode, name,groupId, imageUrl, iconUrl, isLocal, isSpecial, fromType,parentCategoryId,parentCategoryCode);
         productCategoryDao.insertOrReplace(entity);
     }
 }
