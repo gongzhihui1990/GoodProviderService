@@ -122,9 +122,11 @@ public class LocalService extends IntentService {
                                 Loger.d("所有类型数量:" + productCategoryDao.queryBuilder().count());
                                 List<ProductCategory> categories = productCategoryDao.queryBuilder().list();
                                 for (ProductCategory category : categories) {
+
                                     if (category.getParentCategoryCode() == null) {
                                         List<Integer> categoryIds=new ArrayList<Integer>();
                                         int categoryId = category.getCategoryId();
+                                        LocalApi.getProducts(categoryId);
                                         categoryIds.add(categoryId);
                                         Loger.d("categoryId:" + categoryId);
                                         List<ProductCategory> categoryChildList = productCategoryDao.queryBuilder().where(ProductCategoryDao.Properties.ParentCategoryId.eq(categoryId)).list();
@@ -153,7 +155,6 @@ public class LocalService extends IntentService {
                                         Loger.d("CategoryId-" + categoryId + "-size-" + inCategoryProducts.size());
                                     }
                                 }
-
                             }
                         });
                 break;

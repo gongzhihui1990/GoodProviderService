@@ -8,14 +8,15 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.reactivex.Observable;
 import koolpos.cn.goodproviderservice.MyApplication;
 import koolpos.cn.goodproviderservice.constans.State;
 import koolpos.cn.goodproviderservice.constans.StateEnum;
-import koolpos.cn.goodproviderservice.model.ProductCategoryBean;
 import koolpos.cn.goodproviderservice.mvcDao.greenDao.Goods;
 import koolpos.cn.goodproviderservice.mvcDao.greenDao.GoodsDao;
+import koolpos.cn.goodproviderservice.mvcDao.greenDao.Product;
 import koolpos.cn.goodproviderservice.mvcDao.greenDao.ProductCategory;
+import koolpos.cn.goodproviderservice.mvcDao.greenDao.ProductCategoryDao;
+import koolpos.cn.goodproviderservice.mvcDao.greenDao.ProductDao;
 import koolpos.cn.goodproviderservice.util.Loger;
 
 /**
@@ -98,5 +99,45 @@ public class LocalApi {
         Loger.e("all root size:"+categoryList.size());
 
         return new Gson().toJson(categoryList);
+    }
+    public static String getProducts(int categoryIdParam){
+        ProductCategoryDao productCategoryDao = MyApplication.getDaoSession().getProductCategoryDao();
+        ProductDao productDao = MyApplication.getDaoSession().getProductDao();
+        List<Product> inCategoryProducts = new ArrayList<Product>();
+        List<Integer> allCategoryIds=new ArrayList<Integer>();
+        int categoryId = categoryIdParam;
+        addCategoryId(allCategoryIds,categoryId,productCategoryDao);
+//        allCategoryIds.add(categoryId);
+//        List<ProductCategory> categoryChildList = productCategoryDao.queryBuilder()
+//                .where(ProductCategoryDao.Properties.ParentCategoryId.eq(categoryId)).list();
+//        if (categoryChildList != null && categoryChildList.size() != 0) {
+//            for (ProductCategory childCategory : categoryChildList) {
+//                allCategoryIds.add(childCategory.getCategoryId());
+//            }
+//        }
+        List<Product> allProduct= productDao.queryBuilder().list();
+        for (Product product:allProduct){
+            for (int id: allCategoryIds) {
+                if (product.getProductCategoryIDs()!=null&&
+                        product.getProductCategoryIDs().contains(id)){
+                    inCategoryProducts.add(product);
+                    break;
+                }
+            }
+        }
+        Loger.d("CategoryId-" + categoryId + "有" + inCategoryProducts.size()+"件商品");
+        return new Gson().toJson(inCategoryProducts);
+    }
+    //TODO 递归
+    private static void addCategoryId(List<Integer> allCategoryIds, int categoryId, ProductCategoryDao productCategoryDao ){
+        allCategoryIds.add(categoryId);
+        List<ProductCategory> categoryChildList = productCategoryDao.queryBuilder()
+                .where(ProductCategoryDao.Properties.ParentCategoryId.eq(categoryId)).list();
+        if (categoryChildList != null && categoryChildList.size() != 0) {
+            for (ProductCategory childCategory : categoryChildList) {
+                int childCategoryId= childCategory.getCategoryId();
+                addCategoryId(allCategoryIds,childCategoryId,productCategoryDao);
+            }
+        }
     }
 }
