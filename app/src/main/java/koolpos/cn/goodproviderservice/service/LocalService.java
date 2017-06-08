@@ -105,7 +105,7 @@ public class LocalService extends IntentService {
                                 //Loger.d("所有可显示类型:"+ LocalApi.getCategory().toString());
                                 ProductDao productDao = MyApplication.getDaoSession().getProductDao();
                                 Loger.d("所有商品数量:" + productDao.queryBuilder().count());
-
+                                MyApplication.StateNow=new State(StateEnum.Ok,"");
                                 for (Product product : productDao.queryBuilder().list()) {
                                     List<Integer> cats = product.getProductCategoryIDs();
                                     if (cats != null && cats.size() != 0) {
