@@ -1,10 +1,12 @@
-package koolpos.cn.goodproviderservice.model;
+package koolpos.cn.goodproviderservice.model.response;
+
+import koolpos.cn.goodproviderservice.model.BaseBean;
 
 /**
  * Created by Administrator on 2017/6/5.
  */
 
-public class BaseResponse<T> extends BaseBean{
+public class BaseResponse<T> extends BaseBean {
     private static final long serialVersionUID = -3812140468003097002L;
     private String status;
     private String message;

@@ -25,7 +25,7 @@
             </intent-filter>
         </service>
 
-        <service android:name=".service.LocalService">
+        <service android:name=".service.LocalIntentService">
             <intent-filter>
                 <action android:name="com.service.local.InitData"/>
             </intent-filter>

@@ -1,9 +1,8 @@
-package koolpos.cn.goodproviderservice.model;
+package koolpos.cn.goodproviderservice.model.response;
 
 import java.util.List;
 
 import koolpos.cn.goodproviderservice.mvcDao.GreenDaoInsert;
-import koolpos.cn.goodproviderservice.mvcDao.greenDao.Product;
 import koolpos.cn.goodproviderservice.mvcDao.greenDao.ProductDao;
 
 /**

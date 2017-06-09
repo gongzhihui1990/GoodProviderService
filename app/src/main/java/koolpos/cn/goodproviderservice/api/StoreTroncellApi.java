@@ -1,10 +1,10 @@
 package koolpos.cn.goodproviderservice.api;
 
 import io.reactivex.Observable;
-import koolpos.cn.goodproviderservice.model.BaseResponse;
-import koolpos.cn.goodproviderservice.model.PageDataResponse;
-import koolpos.cn.goodproviderservice.model.ProductCategoryBean;
-import koolpos.cn.goodproviderservice.model.ProductRootItem;
+import koolpos.cn.goodproviderservice.model.response.BaseResponse;
+import koolpos.cn.goodproviderservice.model.response.PageDataResponse;
+import koolpos.cn.goodproviderservice.model.response.ProductCategoryBean;
+import koolpos.cn.goodproviderservice.model.response.ProductRootItem;
 import retrofit2.http.GET;
 import retrofit2.http.Query;
 

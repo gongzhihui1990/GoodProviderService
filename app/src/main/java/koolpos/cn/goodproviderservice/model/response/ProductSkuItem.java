@@ -1,4 +1,4 @@
-package koolpos.cn.goodproviderservice.model;
+package koolpos.cn.goodproviderservice.model.response;
 
 import java.util.ArrayList;
 import java.util.List;

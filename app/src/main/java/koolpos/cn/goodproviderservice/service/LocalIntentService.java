@@ -4,10 +4,7 @@ import android.app.IntentService;
 import android.content.Intent;
 import android.support.annotation.Nullable;
 
-import com.google.gson.Gson;
 import com.jakewharton.retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
-
-import org.greenrobot.greendao.query.QueryBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,16 +18,15 @@ import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
 import koolpos.cn.goodproviderservice.MyApplication;
-import koolpos.cn.goodproviderservice.api.LocalApi;
 import koolpos.cn.goodproviderservice.api.StoreTroncellApi;
 import koolpos.cn.goodproviderservice.constans.Action;
 import koolpos.cn.goodproviderservice.constans.Constant;
 import koolpos.cn.goodproviderservice.constans.State;
 import koolpos.cn.goodproviderservice.constans.StateEnum;
-import koolpos.cn.goodproviderservice.model.BaseResponse;
-import koolpos.cn.goodproviderservice.model.PageDataResponse;
-import koolpos.cn.goodproviderservice.model.ProductCategoryBean;
-import koolpos.cn.goodproviderservice.model.ProductRootItem;
+import koolpos.cn.goodproviderservice.model.response.BaseResponse;
+import koolpos.cn.goodproviderservice.model.response.PageDataResponse;
+import koolpos.cn.goodproviderservice.model.response.ProductCategoryBean;
+import koolpos.cn.goodproviderservice.model.response.ProductRootItem;
 import koolpos.cn.goodproviderservice.mvcDao.greenDao.Product;
 import koolpos.cn.goodproviderservice.mvcDao.greenDao.ProductCategory;
 import koolpos.cn.goodproviderservice.mvcDao.greenDao.ProductCategoryDao;
@@ -45,17 +41,17 @@ import retrofit2.converter.gson.GsonConverterFactory;
  * Created by Administrator on 2017/6/5.
  */
 
-public class LocalService extends IntentService {
+public class LocalIntentService extends IntentService {
     /**
      * Creates an IntentService.  Invoked by your subclass's constructor.
      *
      * @param name Used to name the worker thread, important only for debugging.
      */
-    public LocalService(String name) {
+    public LocalIntentService(String name) {
         super(name);
     }
 
-    public LocalService() {
+    public LocalIntentService() {
         super("LocalService");
     }
 
@@ -126,7 +122,7 @@ public class LocalService extends IntentService {
                                     if (category.getParentCategoryCode() == null) {
                                         List<Integer> categoryIds=new ArrayList<Integer>();
                                         int categoryId = category.getCategoryId();
-                                        LocalApi.getProducts(categoryId);
+                                        //LocalApi.getProducts(categoryId);
                                         categoryIds.add(categoryId);
                                         Loger.d("categoryId:" + categoryId);
                                         List<ProductCategory> categoryChildList = productCategoryDao.queryBuilder().where(ProductCategoryDao.Properties.ParentCategoryId.eq(categoryId)).list();

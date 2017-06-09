@@ -1,5 +1,6 @@
-package koolpos.cn.goodproviderservice.model;
+package koolpos.cn.goodproviderservice.model.response;
 
+import koolpos.cn.goodproviderservice.model.BaseBean;
 import koolpos.cn.goodproviderservice.mvcDao.GreenDaoInsert;
 import koolpos.cn.goodproviderservice.mvcDao.greenDao.ProductDao;
 

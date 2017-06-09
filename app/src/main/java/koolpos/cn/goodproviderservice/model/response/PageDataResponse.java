@@ -1,12 +1,14 @@
-package koolpos.cn.goodproviderservice.model;
+package koolpos.cn.goodproviderservice.model.response;
 
 import java.util.List;
+
+import koolpos.cn.goodproviderservice.model.BaseBean;
 
 /**
  * Created by Administrator on 2017/6/5.
  */
 
-public class PageDataResponse<T> extends BaseBean{
+public class PageDataResponse<T> extends BaseBean {
     private static final long serialVersionUID = 7573832955122324654L;
     private int page;
     private int pageSize;
