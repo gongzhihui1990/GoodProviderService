@@ -5,6 +5,7 @@
     <!-- Strings related to login -->
     <string name="prompt_key">设备Key</string>
     <string name="prompt_id">管理账号</string>
+    <string name="prompt_sn">设备序列号</string>
     <string name="prompt_password">账户密码</string>
     <string name="action_set_key">设置密钥</string>
     <string name="action_set_key_in_short">设置</string>

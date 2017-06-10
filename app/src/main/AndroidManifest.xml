@@ -31,7 +31,7 @@
             </intent-filter>
         </service>
         <activity
-            android:name=".activity.LoginActivity"
+            android:name=".activity.MainActivity"
             android:label="@string/title_activity_set">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
