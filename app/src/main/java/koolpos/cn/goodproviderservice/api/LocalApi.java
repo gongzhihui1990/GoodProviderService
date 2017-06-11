@@ -3,12 +3,15 @@ package koolpos.cn.goodproviderservice.api;
 import com.google.gson.Gson;
 
 import org.greenrobot.greendao.query.WhereCondition;
+import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import koolpos.cn.goodproviderservice.MyApplication;
+import koolpos.cn.goodproviderservice.constans.ImageEnum;
 import koolpos.cn.goodproviderservice.constans.State;
 import koolpos.cn.goodproviderservice.constans.StateEnum;
 import koolpos.cn.goodproviderservice.mvcDao.greenDao.Goods;
@@ -36,33 +39,44 @@ public class LocalApi {
             response.setMessage(getAppState().getMessage());
             return response;
         }
-        String action = reqJson.optString("action");
-        switch (action) {
-            case "local/get/category":
-                response.setData(getCategory());
-                break;
-            case "local/get/products":
-                String categoryId = reqJson.optString("categoryId");
-                response.setData(getProductsByCategoryId(categoryId));
-                break;
-            case "local/get/appState":
-                response.setData(getAppState().getMessage());
-                break;
-            case "local/get/all":
-                response.setData(getAll());
-                break;
-            case "local/get/getTypeList":
-                response.setData(getTypeList());
-                break;
-            case "local/get/getListByType":
-                String type = reqJson.optString("type");
-                response.setData(getListByType(type));
-                break;
-            default:
-                response.setCode(-1);
-                response.setMessage("unSupport " + action);
-                break;
+        try{
+            String action = reqJson.optString("action");
+            switch (action) {
+                case "local/get/category":
+                    response.setData(getCategory());
+                    break;
+                case "local/get/products":
+                    String categoryId = reqJson.optString("categoryId");
+                    response.setData(getProductsByCategoryId(categoryId));
+                    break;
+                case "local/get/appState":
+                    response.setData(getAppState().getMessage());
+                    break;
+                case "local/get/all":
+                    response.setData(getAll());
+                    break;
+                case "local/get/getTypeList":
+                    response.setData(getTypeList());
+                    break;
+                case "local/get/getListByType":
+                    String type = reqJson.optString("type");
+                    response.setData(getListByType(type));
+                    break;
+                case "local/getImageSrcPaths":
+                    response.setData(getImageSrcPaths());
+                    break;
+                default:
+                    response.setCode(-1);
+                    response.setMessage("unSupport " + action);
+                    break;
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+            response.setCode(-1);
+            response.setStatus(AIDLResponse.FAIL);
+            response.setMessage(e.getMessage());
         }
+
         return response;
     }
 
@@ -138,4 +152,15 @@ public class LocalApi {
         Loger.e("all root size:" + categoryList.size());
         return new Gson().toJson(categoryList);
     }
+
+
+    public static String getImageSrcPaths() throws JSONException, IOException {
+        JSONObject jsonObject = new JSONObject();
+        for (ImageEnum imageEnum : ImageEnum.values()) {
+            String path = SrcFileApi.getImageSrcPath(imageEnum);
+            jsonObject.put(imageEnum.name(), path);
+        }
+        return jsonObject.toString();
+    }
+
 }

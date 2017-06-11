@@ -3,15 +3,20 @@ package koolpos.cn.goodproviderservice;
 import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 
 import org.greenrobot.greendao.database.Database;
 
+import koolpos.cn.goodproviderservice.api.LocalApi;
 import koolpos.cn.goodproviderservice.api.LocalTestApi;
+import koolpos.cn.goodproviderservice.api.SrcFileApi;
 import koolpos.cn.goodproviderservice.constans.Action;
 import koolpos.cn.goodproviderservice.constans.State;
 import koolpos.cn.goodproviderservice.constans.StateEnum;
 import koolpos.cn.goodproviderservice.mvcDao.greenDao.DaoMaster;
 import koolpos.cn.goodproviderservice.mvcDao.greenDao.DaoSession;
+import koolpos.cn.goodproviderservice.mvcDao.greenDao.Setting;
+import koolpos.cn.goodproviderservice.mvcDao.greenDao.SettingDao;
 import koolpos.cn.goodproviderservice.service.LocalIntentService;
 import koolpos.cn.goodproviderservice.util.Loger;
 
@@ -27,6 +32,16 @@ public class MyApplication extends Application {
 //    public static final String State_OK = "State_OK";
     public static State StateNow = new State(StateEnum.Progressing,"尚未启动");
 
+    public static Setting getSetting(){
+        Setting deviceSetting = MyApplication.getDaoSession()
+                .getSettingDao().queryBuilder()
+                .where(SettingDao.Properties.DeviceSn.eq(Build.SERIAL)).unique();
+        if (deviceSetting==null){
+            deviceSetting=new Setting();
+            deviceSetting.setDeviceSn(Build.SERIAL);
+        }
+        return deviceSetting;
+    }
     private boolean ENCRYPTED=false;
     public static Context getContext() {
         return context;
@@ -48,6 +63,6 @@ public class MyApplication extends Application {
         intent.setAction(Action.InitData);
         Loger.d("start Service");
         startService(intent);
-        LocalTestApi.addTestGoodsData();
     }
+
 }

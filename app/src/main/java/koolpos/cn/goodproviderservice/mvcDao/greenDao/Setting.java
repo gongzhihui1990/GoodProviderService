@@ -25,32 +25,24 @@ public class Setting implements Serializable {
     @NotNull
     @Unique
     private String deviceSn;
-    /**
-     * 首页背景资源文件路径
-     */
-    private String picMainPagePath;
-    /**
-     * 首页title资源文件路径
-     */
-    private String picMainTitlePath;
-
     private String deviceKey;
     private Date lastUpdateTime;
-    @Generated(hash = 2020555812)
+    private boolean loadCacheFirst;
+
+    @Generated(hash = 1534237997)
     public Setting(Long id, int intervalAd, @NotNull String deviceSn,
-            String picMainPagePath, String picMainTitlePath, String deviceKey,
-            Date lastUpdateTime) {
+            String deviceKey, Date lastUpdateTime, boolean loadCacheFirst) {
         this.id = id;
         this.intervalAd = intervalAd;
         this.deviceSn = deviceSn;
-        this.picMainPagePath = picMainPagePath;
-        this.picMainTitlePath = picMainTitlePath;
         this.deviceKey = deviceKey;
         this.lastUpdateTime = lastUpdateTime;
+        this.loadCacheFirst = loadCacheFirst;
     }
     @Generated(hash = 909716735)
     public Setting() {
     }
+
     public Long getId() {
         return this.id;
     }
@@ -69,18 +61,6 @@ public class Setting implements Serializable {
     public void setDeviceSn(String deviceSn) {
         this.deviceSn = deviceSn;
     }
-    public String getPicMainPagePath() {
-        return this.picMainPagePath;
-    }
-    public void setPicMainPagePath(String picMainPagePath) {
-        this.picMainPagePath = picMainPagePath;
-    }
-    public String getPicMainTitlePath() {
-        return this.picMainTitlePath;
-    }
-    public void setPicMainTitlePath(String picMainTitlePath) {
-        this.picMainTitlePath = picMainTitlePath;
-    }
     public String getDeviceKey() {
         return this.deviceKey;
     }
@@ -92,5 +72,11 @@ public class Setting implements Serializable {
     }
     public void setLastUpdateTime(Date lastUpdateTime) {
         this.lastUpdateTime = lastUpdateTime;
+    }
+    public boolean getLoadCacheFirst() {
+        return this.loadCacheFirst;
+    }
+    public void setLoadCacheFirst(boolean loadCacheFirst) {
+        this.loadCacheFirst = loadCacheFirst;
     }
 }

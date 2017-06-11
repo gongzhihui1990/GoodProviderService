@@ -5,6 +5,7 @@ package koolpos.cn.goodproviderservice.constans;
  */
 
 public class Constant {
-    public static final String TestKey="98766544321qss";
+    public static final String MYTestKey="98766544321qss";
+    public static final int Def_AD_INTERNAL= 60*5;
 
 }

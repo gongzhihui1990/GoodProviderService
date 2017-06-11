@@ -24,7 +24,6 @@ public class GPService extends BaseService {
             Loger.d("request:"+request);
             AIDLResponse response=new AIDLResponse();
             //TODO
-            Loger.d("key:"+ MySPEdit.getInstance().getKey());
             try {
                 JSONObject reqJson=new JSONObject(request);
                 String action = reqJson.optString("action");

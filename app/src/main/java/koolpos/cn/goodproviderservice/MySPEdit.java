@@ -28,13 +28,4 @@ public class MySPEdit {
 		return _instancePublic;
 	}
 
-
-	public void setKey(String device_key) {
-		editor.putString("device_key", device_key).commit();
-
-	}
-
-	public String getKey() {
-		return sPreferences.getString("device_key", "");
-	}
 }

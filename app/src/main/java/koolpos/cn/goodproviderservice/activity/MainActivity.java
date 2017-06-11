@@ -3,30 +3,24 @@ package koolpos.cn.goodproviderservice.activity;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
-import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
-import android.support.v7.app.AppCompatActivity;
-
-import android.os.AsyncTask;
 
 import android.os.Build;
 import android.os.Bundle;
-import android.provider.ContactsContract;
+import android.telecom.TelecomManager;
+import android.telephony.TelephonyManager;
 import android.text.TextUtils;
-import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.inputmethod.EditorInfo;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
+
+import java.util.Date;
 
 import butterknife.BindView;
 import io.reactivex.Observable;
@@ -35,22 +29,22 @@ import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
 import koolpos.cn.goodproviderservice.MyApplication;
-import koolpos.cn.goodproviderservice.MySPEdit;
 import koolpos.cn.goodproviderservice.R;
+import koolpos.cn.goodproviderservice.constans.Constant;
 import koolpos.cn.goodproviderservice.mvcDao.greenDao.Setting;
 import koolpos.cn.goodproviderservice.mvcDao.greenDao.SettingDao;
-import koolpos.cn.goodproviderservice.service.aidl.IGPService;
-import koolpos.cn.goodproviderservice.util.AndroidUtils;
+import koolpos.cn.goodproviderservice.util.Loger;
 
 import static android.Manifest.permission.INTERNET;
 import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 import static android.Manifest.permission.ACCESS_NETWORK_STATE;
 import static android.Manifest.permission.ACCESS_WIFI_STATE;
 import static android.Manifest.permission.READ_PHONE_STATE;
+
 /**
  * A login screen that offers login via email/password.
  */
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends BaseActivity {
 
     /**
      * Id to identity READ_CONTACTS permission request.
@@ -70,78 +64,86 @@ public class MainActivity extends AppCompatActivity {
 
     // UI references.
     @BindView(R.id.device_sn_view)
-    private AutoCompleteTextView  mDeviceSnView;
-    private EditText mKeyView;
-    private View mProgressView;
-    private View mLoginFormView;
-
-    private void renderSetting(){
-        Observable.just(MyApplication.getDaoSession().getSettingDao())
-                .map(new Function<SettingDao, Setting>() {
-                    @Override
-                    public Setting apply(@io.reactivex.annotations.NonNull SettingDao settingDao) throws Exception {
-                        Setting setting =settingDao.queryBuilder().where(SettingDao.Properties.DeviceSn.eq(Build.SERIAL)).unique();
-                        if (setting==null){
-                            setting =new Setting();
-                            setting.setDeviceSn(Build.SERIAL);
-                        }
-                        return setting;
-                    }
-                }).subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Consumer<Setting>() {
-                    @Override
-                    public void accept(@io.reactivex.annotations.NonNull Setting setting) throws Exception {
-                        renderSetting(setting);
-                    }
-                    private void renderSetting(Setting setting) {
-
-                    }
-                });
-    }
-    private ServiceConnection connection = new ServiceConnection() {
-
-        @Override
-        public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
-            IGPService gpService = IGPService.Stub.asInterface(iBinder);
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName componentName) {
-        }
-    };
+    AutoCompleteTextView mDeviceSnView;
+    @BindView(R.id.device_key)
+    EditText mKeyView;
+    @BindView(R.id.login_progress)
+    View mProgressView;
+    @BindView(R.id.login_form)
+    View mLoginFormView;
+    @BindView(R.id.key_set_button)
+    Button mSetKeyButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_setting);
-        Intent serviceIntent = new Intent(IGPService.class.getName());
-        serviceIntent = AndroidUtils.getExplicitIntent(getBaseContext(), serviceIntent);
-        boolean bindService = bindService(serviceIntent, connection, Context.BIND_AUTO_CREATE);
-        // Set up the login form.
-        mDeviceSnView.setText(Build.SERIAL);
-        mKeyView = (AutoCompleteTextView) findViewById(R.id.device_key);
-        mKeyView.setText(MySPEdit.getInstance().getKey());
+        setContentView(R.layout.activity_main);
         populateAutoComplete();
+        boolean resettingFlag = false;
+        if (getIntent() != null) {
+            resettingFlag = getIntent().getBooleanExtra("reset", false);
+        }
+        initUI(resettingFlag);
+    }
 
-        Button mEmailSignInButton = (Button) findViewById(R.id.email_sign_in_button);
-        mEmailSignInButton.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                attemptLogin();
-            }
-        });
+    private class SettingContainer {
+        private Setting setting;
+        private String deviceId;
+    }
 
-        mLoginFormView = findViewById(R.id.login_form);
-        mProgressView = findViewById(R.id.login_progress);
+    private void initUI(final boolean resetting) {
+//        TelephonyManager manager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+        Observable.just(Build.SERIAL)
+                .map(new Function<String, SettingContainer>() {
+                    @Override
+                    public SettingContainer apply(@io.reactivex.annotations.NonNull String sn) throws Exception {
+                        Setting deviceSetting = MyApplication.getDaoSession()
+                                .getSettingDao().queryBuilder()
+                                .where(SettingDao.Properties.DeviceSn.eq(sn)).unique();
+                        SettingContainer settingContain = new SettingContainer();
+                        settingContain.setting = deviceSetting;
+                        settingContain.deviceId = sn;
+                        return settingContain;
+                    }
+                })
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Consumer<SettingContainer>() {
+                    @Override
+                    public void accept(@io.reactivex.annotations.NonNull SettingContainer settingContainer) throws Exception {
+
+                        if (settingContainer.setting == null || resetting) {
+                            Loger.d("setting is null," + settingContainer.deviceId);
+                            mDeviceSnView.setText(settingContainer.deviceId);
+                            mDeviceSnView.setEnabled(false);
+                            mKeyView.setText(Constant.MYTestKey);
+                            mSetKeyButton.setOnClickListener(new OnClickListener() {
+                                @Override
+                                public void onClick(View view) {
+                                    attemptSetKey();
+                                }
+                            });
+                        } else {
+                            Loger.d("setting is set");
+                            mDeviceSnView.setText(settingContainer.setting.getDeviceSn());
+                            mDeviceSnView.setEnabled(false);
+                            mKeyView.setText(settingContainer.setting.getDeviceKey());
+                            mKeyView.setEnabled(false);
+                            mSetKeyButton.setEnabled(false);
+
+                            //展示Setting
+                            Intent settingIntent = new Intent(getBaseContext(), SettingActivity.class);
+                            settingIntent.putExtra(Setting.class.getName(), settingContainer.setting);
+                            startActivity(settingIntent);
+                            finish();
+                        }
+                    }
+                });
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (connection!=null){
-            unbindService(connection);
-        }
     }
 
     private void populateAutoComplete() {
@@ -154,7 +156,7 @@ public class MainActivity extends AppCompatActivity {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
             return true;
         }
-        final String[] permissions={INTERNET,WRITE_EXTERNAL_STORAGE,ACCESS_NETWORK_STATE,ACCESS_WIFI_STATE,READ_PHONE_STATE};
+        final String[] permissions = {INTERNET, WRITE_EXTERNAL_STORAGE, ACCESS_NETWORK_STATE, ACCESS_WIFI_STATE, READ_PHONE_STATE};
         if (shouldShowRequestPermissionRationale(INTERNET)) {
             Snackbar.make(mDeviceSnView, R.string.permission_rationale, Snackbar.LENGTH_INDEFINITE)
                     .setAction(android.R.string.ok, new View.OnClickListener() {
@@ -184,28 +186,23 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    /**
-     * Attempts to sign in or register the account specified by the login form.
-     * If there are form errors (invalid email, missing fields, etc.), the
-     * errors are presented and no actual login attempt is made.
-     */
-    private void attemptLogin() {
+    private void attemptSetKey() {
         // Reset errors.
         mDeviceSnView.setError(null);
 
         // Store values at the time of the login attempt.
         String deviceKey = mKeyView.getText().toString();
-        String deviceId = mDeviceSnView.getText().toString();
+        String deviceSn = mDeviceSnView.getText().toString();
 
         boolean cancel = false;
         View focusView = null;
 
-        // Check for a valid email address.
-        if (TextUtils.isEmpty(deviceId)) {
-            mDeviceSnView.setError(getString(R.string.error_field_required));
-            focusView = mDeviceSnView;
+        // Check for a valid deviceKey.
+        if (TextUtils.isEmpty(deviceKey)) {
+            mKeyView.setError(getString(R.string.error_field_required));
+            focusView = mKeyView;
             cancel = true;
-        } else if (TextUtils.isEmpty(deviceId)) {
+        } else if (TextUtils.isEmpty(deviceSn)) {
             mDeviceSnView.setError(getString(R.string.error_field_required));
             focusView = mDeviceSnView;
             cancel = true;
@@ -217,17 +214,19 @@ public class MainActivity extends AppCompatActivity {
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
             //TODO
+            Setting deviceSetting = MyApplication.getDaoSession()
+                    .getSettingDao().queryBuilder()
+                    .where(SettingDao.Properties.DeviceSn.eq(deviceKey)).unique();
+            if (deviceSetting == null) {
+                deviceSetting = new Setting();
+                deviceSetting.setLastUpdateTime(new Date());
+                deviceSetting.setIntervalAd(Constant.Def_AD_INTERNAL);
+                deviceSetting.setDeviceSn(deviceSn);
+                deviceSetting.setDeviceKey(deviceKey);
+            }
+            MyApplication.getDaoSession().getSettingDao().insertOrReplace(deviceSetting);
+            initUI(false);
         }
-    }
-
-    private boolean isEmailValid(String userId) {
-        //TODO: Replace this with your own logic
-        return userId.length() > 2;
-    }
-
-    private boolean isPasswordValid(String password) {
-        //TODO: Replace this with your own logic
-        return password.length() > 4;
     }
 
 
