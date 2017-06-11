@@ -272,14 +272,20 @@ public class SrcFileApi {
     private final static String productFileName="productJson.txt";
     private final static String productCategoryFileName="categoryJson.txt";
 
-    public static void save(BaseResponse<PageDataResponse<ProductRootItem>> allProducts, BaseResponse<PageDataResponse<ProductCategoryBean>> allCategory) {
-
-        File productJsonFile =new File(getRootPath(),productCategoryFileName)
-
-
+    public static void save(BaseResponse<PageDataResponse<ProductRootItem>> allProducts, BaseResponse<PageDataResponse<ProductCategoryBean>> allCategory) throws IOException {
+        File productJsonFile =new File(Environment.getExternalStorageDirectory(),productFileName);
+        File categoryJsonFile =new File(Environment.getExternalStorageDirectory(),productCategoryFileName);
+        save(allProducts.toString(),productJsonFile);
+        save(allCategory.toString(),categoryJsonFile);
     }
 
     private static void save(String data,File targetFile) throws IOException {
+        if (!targetFile.exists()){
+            targetFile.createNewFile();
+        }else {
+            targetFile.delete();
+            targetFile.createNewFile();
+        }
         FileWriter fileWriter=new FileWriter(targetFile);
         fileWriter.write(data);
         fileWriter.flush();

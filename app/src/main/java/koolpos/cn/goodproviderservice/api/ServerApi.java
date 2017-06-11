@@ -63,7 +63,11 @@ public class ServerApi {
             @Override
             public Boolean apply(@NonNull BaseResponse<PageDataResponse<ProductRootItem>> allProducts, @NonNull BaseResponse<PageDataResponse<ProductCategoryBean>> allCategory) throws Exception {
                 Loger.d("数据全部下载，开始写本地缓存任务");
-                SrcFileApi.save(allProducts,allCategory);
+                try{
+                    SrcFileApi.save(allProducts,allCategory);
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
                 Loger.d("数据全部下载，开始写数据库");
                 List<ProductCategoryBean> categories = allCategory.getData().getData();
                 if (categories.size() != 0) {
