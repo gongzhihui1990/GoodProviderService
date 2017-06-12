@@ -2,14 +2,14 @@ package koolpos.cn.goodproviderservice.api;
 
 import android.os.Environment;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringWriter;
+import java.io.InputStreamReader;
 import java.util.Date;
 import java.util.Properties;
 
@@ -23,6 +23,7 @@ import io.reactivex.functions.Predicate;
 import io.reactivex.schedulers.Schedulers;
 import koolpos.cn.goodproviderservice.MyApplication;
 import koolpos.cn.goodproviderservice.constans.ImageEnum;
+import koolpos.cn.goodproviderservice.model.response.AdBean;
 import koolpos.cn.goodproviderservice.model.response.BaseResponse;
 import koolpos.cn.goodproviderservice.model.response.PageDataResponse;
 import koolpos.cn.goodproviderservice.model.response.ProductCategoryBean;
@@ -45,9 +46,6 @@ public class SrcFileApi {
                             Loger.i("新建文件");
                         } else {
                             Loger.i("已有文件");
-                            //TODO 需要删除
-                            rootSrc.delete();
-                            boolean create = rootSrc.createNewFile();
 
                         }
                         return rootSrc;
@@ -168,7 +166,7 @@ public class SrcFileApi {
                 });
     }
 
-    private static File getRootPath(@NonNull Properties properties){
+    private static File getRootPath(@NonNull Properties properties) {
         File sdFile = Environment.getExternalStorageDirectory();
         String rootPath = properties.getProperty("rootPath");
         File rootFile = new File(sdFile, rootPath);
@@ -179,7 +177,7 @@ public class SrcFileApi {
     }
 
     private static File getImageRootPathFile(@NonNull Properties properties) {
-        File rootFile =getRootPath(properties);
+        File rootFile = getRootPath(properties);
         Loger.i("配置开始载入" + rootFile.getAbsolutePath());
 
         String imagePath = properties.getProperty("imagePath");
@@ -228,10 +226,11 @@ public class SrcFileApi {
         Loger.i(targetFile + "初始化成功");
 
     }
+
     public static void resetFileSrc(ImageEnum imageEnum, String fileName) throws IOException {
-        File targetFile= new File(getImageSrcPath(imageEnum));
+        File targetFile = new File(getImageSrcPath(imageEnum));
         Loger.i("配置开始重新载入:" + targetFile);
-        if (targetFile.exists()){
+        if (targetFile.exists()) {
             targetFile.delete();
         }
         targetFile.createNewFile();
@@ -241,7 +240,7 @@ public class SrcFileApi {
     }
 
     private static void copyFile(File targetFile, String fileName) throws IOException {
-        InputStream inputStream =new FileInputStream(fileName);// MyApplication.getContext().getAssets().open(fileName);
+        InputStream inputStream = new FileInputStream(fileName);// MyApplication.getContext().getAssets().open(fileName);
         FileOutputStream fileOutputStream = new FileOutputStream(targetFile);
         byte[] buffer = new byte[512];
         int count = 0;
@@ -280,24 +279,49 @@ public class SrcFileApi {
         path = imageFile.getAbsolutePath();
         return path;
     }
-    private final static String productFileName="productJson.txt";
-    private final static String productCategoryFileName="categoryJson.txt";
 
-    public static void save(BaseResponse<PageDataResponse<ProductRootItem>> allProducts, BaseResponse<PageDataResponse<ProductCategoryBean>> allCategory) throws IOException {
-        File productJsonFile =new File(Environment.getExternalStorageDirectory(),productFileName);
-        File categoryJsonFile =new File(Environment.getExternalStorageDirectory(),productCategoryFileName);
-        save(allProducts.toString(),productJsonFile);
-        save(allCategory.toString(),categoryJsonFile);
+    final static String productFileName = "productJson.txt";
+    final static String productCategoryFileName = "categoryJson.txt";
+    final static String adFileName = "adJson.txt";
+
+    static String getJsonFileToString(String jsonFileName) throws IOException {
+        File jsonFile = new File(Environment.getExternalStorageDirectory(), jsonFileName);
+        InputStream is = new FileInputStream(jsonFile.getAbsolutePath());
+        String line; // 用来保存每行读取的内容
+        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+        line = reader.readLine(); // 读取第一行
+        StringBuffer buffer = new StringBuffer();
+        while (line != null) { // 如果 line 为空说明读完了
+            buffer.append(line); // 将读到的内容添加到 buffer 中
+            buffer.append("\n"); // 添加换行符
+            line = reader.readLine(); // 读取下一行
+        }
+        reader.close();
+        is.close();
+        String jsonStr= buffer.toString();
+        return jsonStr;
     }
 
-    private static void save(String data,File targetFile) throws IOException {
-        if (!targetFile.exists()){
+    static void save(BaseResponse<PageDataResponse<ProductRootItem>> allProducts,
+                     BaseResponse<PageDataResponse<ProductCategoryBean>> allCategory,
+                     BaseResponse<PageDataResponse<AdBean>> allAd
+    ) throws IOException {
+        File productJsonFile = new File(Environment.getExternalStorageDirectory(), productFileName);
+        File categoryJsonFile = new File(Environment.getExternalStorageDirectory(), productCategoryFileName);
+        File adJsonFile = new File(Environment.getExternalStorageDirectory(), adFileName);
+        save(allProducts.toString(), productJsonFile);
+        save(allCategory.toString(), categoryJsonFile);
+        save(allAd.toString(), adJsonFile);
+    }
+
+    private static void save(String data, File targetFile) throws IOException {
+        if (!targetFile.exists()) {
             targetFile.createNewFile();
-        }else {
+        } else {
             targetFile.delete();
             targetFile.createNewFile();
         }
-        FileWriter fileWriter=new FileWriter(targetFile);
+        FileWriter fileWriter = new FileWriter(targetFile);
         fileWriter.write(data);
         fileWriter.flush();
         fileWriter.close();

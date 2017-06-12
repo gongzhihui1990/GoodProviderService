@@ -1,6 +1,7 @@
 package koolpos.cn.goodproviderservice.api;
 
 import io.reactivex.Observable;
+import koolpos.cn.goodproviderservice.model.response.AdBean;
 import koolpos.cn.goodproviderservice.model.response.BaseResponse;
 import koolpos.cn.goodproviderservice.model.response.PageDataResponse;
 import koolpos.cn.goodproviderservice.model.response.ProductCategoryBean;
@@ -19,4 +20,6 @@ public interface StoreTroncellApi {
     Observable<BaseResponse<PageDataResponse<ProductCategoryBean>>> getProductCategories(@Query("subkey") String subkey);
     @GET("/api/v1/storesdk/products")
     Observable<BaseResponse<PageDataResponse<ProductRootItem>>> getProducts(@Query("subkey") String subkey);
+    @GET("/api/v1/storesdk/ads")
+    Observable<BaseResponse<PageDataResponse<AdBean>>> getAds(@Query("subkey") String subkey);
 }

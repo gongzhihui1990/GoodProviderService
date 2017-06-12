@@ -14,6 +14,7 @@ import koolpos.cn.goodproviderservice.MyApplication;
 import koolpos.cn.goodproviderservice.constans.ImageEnum;
 import koolpos.cn.goodproviderservice.constans.State;
 import koolpos.cn.goodproviderservice.constans.StateEnum;
+import koolpos.cn.goodproviderservice.mvcDao.greenDao.Ad;
 import koolpos.cn.goodproviderservice.mvcDao.greenDao.Goods;
 import koolpos.cn.goodproviderservice.mvcDao.greenDao.GoodsDao;
 import koolpos.cn.goodproviderservice.mvcDao.greenDao.Product;
@@ -42,13 +43,23 @@ public class LocalApi {
         try{
             String action = reqJson.optString("action");
             switch (action) {
+//                获取程序基本设置
+                case "local/getSetting":
+                    response.setData(getSetting());
+                    break;
+//                获取广告
+                case "local/get/ad":
+                    response.setData(getAd());
+//                获取产品分类
                 case "local/get/category":
                     response.setData(getCategory());
                     break;
+//                获取产品
                 case "local/get/products":
                     String categoryId = reqJson.optString("categoryId");
                     response.setData(getProductsByCategoryId(categoryId));
                     break;
+//                获取状态
                 case "local/get/appState":
                     response.setData(getAppState().getMessage());
                     break;
@@ -82,10 +93,14 @@ public class LocalApi {
 
     private static String getProductsByCategoryId(String categoryId) {
         int category = Integer.valueOf(categoryId);
-        List<Integer> categoryIds = new ArrayList<>();
-        getSelfCategoryIdList(category, MyApplication.getDaoSession().getProductCategoryDao(), categoryIds);
         List<Product> allProduct = MyApplication.getDaoSession().getProductDao().queryBuilder().list();
         List<Product> inCategoryProducts = new ArrayList<Product>();
+        if (category == -1){
+            inCategoryProducts.addAll(allProduct);
+            return new Gson().toJson(inCategoryProducts);
+        }
+        List<Integer> categoryIds = new ArrayList<>();
+        getSelfCategoryIdList(category, MyApplication.getDaoSession().getProductCategoryDao(), categoryIds);
         for (Product product : allProduct) {
             for (int id : categoryIds) {
                 if (product.getProductCategoryIDs() != null &&
@@ -151,6 +166,20 @@ public class LocalApi {
         }
         Loger.e("all root size:" + categoryList.size());
         return new Gson().toJson(categoryList);
+    }
+    public static String getAd() {
+        List<Ad> adArrayList = new ArrayList<>();
+        List<Ad> list = MyApplication.getDaoSession().getAdDao()
+                .queryBuilder().list();
+        Loger.e("all ad size:" + list.size());
+        for (Ad item : list) {
+            adArrayList.add(item);
+        }
+        Loger.e("all root size:" + adArrayList.size());
+        return new Gson().toJson(adArrayList);
+    }
+    public static String getSetting() {
+        return new Gson().toJson(MyApplication.getSetting());
     }
 
 

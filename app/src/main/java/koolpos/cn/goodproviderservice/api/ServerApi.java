@@ -1,5 +1,7 @@
 package koolpos.cn.goodproviderservice.api;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.jakewharton.retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 
 import java.util.ArrayList;
@@ -11,17 +13,18 @@ import io.reactivex.ObservableSource;
 import io.reactivex.Observer;
 import io.reactivex.annotations.NonNull;
 import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.BiFunction;
-import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
+import io.reactivex.functions.Function4;
 import io.reactivex.schedulers.Schedulers;
 import koolpos.cn.goodproviderservice.MyApplication;
 import koolpos.cn.goodproviderservice.constans.State;
 import koolpos.cn.goodproviderservice.constans.StateEnum;
+import koolpos.cn.goodproviderservice.model.response.AdBean;
 import koolpos.cn.goodproviderservice.model.response.BaseResponse;
 import koolpos.cn.goodproviderservice.model.response.PageDataResponse;
 import koolpos.cn.goodproviderservice.model.response.ProductCategoryBean;
 import koolpos.cn.goodproviderservice.model.response.ProductRootItem;
+import koolpos.cn.goodproviderservice.mvcDao.greenDao.AdDao;
 import koolpos.cn.goodproviderservice.mvcDao.greenDao.Product;
 import koolpos.cn.goodproviderservice.mvcDao.greenDao.ProductCategory;
 import koolpos.cn.goodproviderservice.mvcDao.greenDao.ProductCategoryDao;
@@ -41,10 +44,12 @@ public class ServerApi {
 
 
     private Setting setting;
+
     public ServerApi(Setting setting){
         this.setting=setting;
     }
     public void initServerData() {
+        Loger.i("数据开始加载");
         if (setting.getLoadCacheFirst()){
             initServerDataByCacheFile();
         }else {
@@ -53,22 +58,85 @@ public class ServerApi {
     }
 
     private void initServerDataByCacheFile() {
-        //TODO
+        Observable<BaseResponse<PageDataResponse<ProductRootItem>>> productsObs = getAllProductsByFile();
+        Observable<BaseResponse<PageDataResponse<ProductCategoryBean>>> categoryObs = getCategoryByFile();
+        Observable<BaseResponse<PageDataResponse<AdBean>>> adObs = getAdsByFile();
+        Observable<Boolean> loadFromCacheFile = Observable.just(true);
+        Observable.zip(productsObs, categoryObs, adObs,loadFromCacheFile, getPersistentDataFunction()).subscribeOn(Schedulers.io())
+                .observeOn(Schedulers.io())
+                .subscribe(getPersistentDataObserver());
+    }
+    private Observable<BaseResponse<PageDataResponse<ProductCategoryBean>>> getCategoryByFile() {
+        return Observable.just(SrcFileApi.productCategoryFileName)
+                .map(new Function<String, String>() {
+                    @Override
+                    public String apply(@NonNull String fileName) throws Exception {
+                        return  SrcFileApi.getJsonFileToString(fileName);
+                    }
+                }).map(new Function<String, BaseResponse<PageDataResponse<ProductCategoryBean>>>() {
+            @Override
+            public BaseResponse<PageDataResponse<ProductCategoryBean>> apply(@NonNull String jsonStr) throws Exception {
+                java.lang.reflect.Type token = new TypeToken<BaseResponse<PageDataResponse<ProductCategoryBean>>>() {}.getType();
+                return new Gson().fromJson(jsonStr,token);
+            }
+        });
     }
 
-    private void initServerDataByNet(){
-        Observable<BaseResponse<PageDataResponse<ProductRootItem>>> productsObs = getAllProducts();
-        Observable<BaseResponse<PageDataResponse<ProductCategoryBean>>> categoryObs = getCategory();
-        Observable.zip(productsObs, categoryObs, new BiFunction<BaseResponse<PageDataResponse<ProductRootItem>>, BaseResponse<PageDataResponse<ProductCategoryBean>>, Boolean>() {
+    private Observable<BaseResponse<PageDataResponse<AdBean>>> getAdsByFile() {
+        return Observable.just(SrcFileApi.adFileName)
+                .map(new Function<String, String>() {
+                    @Override
+                    public String apply(@NonNull String fileName) throws Exception {
+                        return  SrcFileApi.getJsonFileToString(fileName);
+                    }
+                }).map(new Function<String, BaseResponse<PageDataResponse<AdBean>>>() {
+                    @Override
+                    public BaseResponse<PageDataResponse<AdBean>> apply(@NonNull String jsonStr) throws Exception {
+                        java.lang.reflect.Type token = new TypeToken<BaseResponse<PageDataResponse<AdBean>> >() {}.getType();
+                        return new Gson().fromJson(jsonStr,token);
+                    }
+                });
+    }
+    private Observable<BaseResponse<PageDataResponse<ProductRootItem>>> getAllProductsByFile() {
+        return Observable.just(SrcFileApi.productFileName)
+                .map(new Function<String, String>() {
+                    @Override
+                    public String apply(@NonNull String fileName) throws Exception {
+                        return  SrcFileApi.getJsonFileToString(fileName);
+                    }
+                }).map(new Function<String, BaseResponse<PageDataResponse<ProductRootItem>>>() {
+                    @Override
+                    public BaseResponse<PageDataResponse<ProductRootItem>> apply(@NonNull String jsonStr) throws Exception {
+                        java.lang.reflect.Type token = new TypeToken<BaseResponse<PageDataResponse<ProductRootItem>>>() {}.getType();
+                        return new Gson().fromJson(jsonStr,token);
+                    }
+                });
+    }
+
+    private  Function4 <BaseResponse<PageDataResponse<ProductRootItem>>,
+            BaseResponse<PageDataResponse<ProductCategoryBean>>,
+            BaseResponse<PageDataResponse<AdBean>>,Boolean, Boolean> getPersistentDataFunction(){
+        return new Function4<BaseResponse<PageDataResponse<ProductRootItem>>,
+                BaseResponse<PageDataResponse<ProductCategoryBean>>,
+                BaseResponse<PageDataResponse<AdBean>>,Boolean, Boolean>() {
             @Override
-            public Boolean apply(@NonNull BaseResponse<PageDataResponse<ProductRootItem>> allProducts, @NonNull BaseResponse<PageDataResponse<ProductCategoryBean>> allCategory) throws Exception {
-                Loger.d("数据全部下载，开始写本地缓存任务");
-                try{
-                    SrcFileApi.save(allProducts,allCategory);
-                }catch (Exception e){
-                    e.printStackTrace();
+            public Boolean apply(@NonNull BaseResponse<PageDataResponse<ProductRootItem>> allProducts,
+                                 @NonNull BaseResponse<PageDataResponse<ProductCategoryBean>> allCategory,
+                                 @NonNull BaseResponse<PageDataResponse<AdBean>> addAds,
+                                 @NonNull Boolean loadFromCacheFile) throws Exception {
+                Loger.d("数据全部加载,是否loadFromCacheFile："+loadFromCacheFile);
+
+                if (!loadFromCacheFile){
+                    Loger.d("开始写本地缓存任务");
+                    try{
+                        SrcFileApi.save(allProducts,allCategory,addAds);
+                    }catch (Exception e){
+                        e.printStackTrace();
+                    }
                 }
-                Loger.d("数据全部下载，开始写数据库");
+                Loger.d("刷新数据库");
+
+                //类型表
                 List<ProductCategoryBean> categories = allCategory.getData().getData();
                 if (categories.size() != 0) {
                     ProductCategoryDao productCategoryDao = MyApplication.getDaoSession().getProductCategoryDao();
@@ -77,6 +145,7 @@ public class ServerApi {
                         category.insert(productCategoryDao);//写入新的数据
                     }
                 }
+                //展示品表
                 List<ProductRootItem> products = allProducts.getData().getData();
                 if (products.size() != 0) {
                     ProductDao productDao = MyApplication.getDaoSession().getProductDao();
@@ -85,82 +154,96 @@ public class ServerApi {
                         product.insert(productDao);//写入新的数据
                     }
                 }
-
-
+                //广告表
+                List<AdBean> ads = addAds.getData().getData();
+                if (products.size() != 0) {
+                    AdDao adDao = MyApplication.getDaoSession().getAdDao();
+                    adDao.deleteAll();
+                    for (AdBean adBean : ads) {
+                        adBean.insert(adDao);//写入新的数据
+                    }
+                }
                 return true;
             }
-        }).subscribeOn(Schedulers.io())
+        };
+    }
+    private Observer<Boolean> getPersistentDataObserver(){
+        return new Observer<Boolean>() {
+            @Override
+            public void onSubscribe(Disposable d) {
+            }
+            @Override
+            public void onNext(Boolean aBoolean) {
+                Loger.d("数据库写成功？" + aBoolean);
+                ProductDao productDao = MyApplication.getDaoSession().getProductDao();
+                Loger.d("所有商品数量:" + productDao.queryBuilder().count());
+                MyApplication.StateNow=new State(StateEnum.Ok,"");
+                for (Product product : productDao.queryBuilder().list()) {
+                    List<Integer> cats = product.getProductCategoryIDs();
+                    if (cats != null && cats.size() != 0) {
+                        String catStr = "";
+                        for (Integer cat : cats) {
+                            catStr += "," + cat;
+                        }
+                    } else {
+                        Loger.e("product:" + product.getId() + "-no cate");
+                    }
+                }
+                ProductCategoryDao productCategoryDao = MyApplication.getDaoSession().getProductCategoryDao();
+                Loger.d("所有类型数量:" + productCategoryDao.queryBuilder().count());
+                List<ProductCategory> categories = productCategoryDao.queryBuilder().list();
+                for (ProductCategory category : categories) {
+
+                    if (category.getParentCategoryCode() == null) {
+                        List<Integer> categoryIds=new ArrayList<Integer>();
+                        int categoryId = category.getCategoryId();
+                        //LocalApi.getProducts(categoryId);
+                        categoryIds.add(categoryId);
+                        Loger.d("categoryId:" + categoryId);
+                        List<ProductCategory> categoryChildList = productCategoryDao.queryBuilder().where(ProductCategoryDao.Properties.ParentCategoryId.eq(categoryId)).list();
+                        if (categoryChildList != null && categoryChildList.size() != 0) {
+                            String cd = "";
+                            for (ProductCategory childCategory : categoryChildList) {
+                                cd += "," + childCategory.getCategoryId();
+                                categoryIds.add(childCategory.getCategoryId());
+                            }
+                        }
+                        List<Product> allProduct= productDao.queryBuilder().list();
+                        List<Product> inCategoryProducts = new ArrayList<Product>();
+
+                        for (Product product:allProduct){
+                            for (int id: categoryIds) {
+                                if (product.getProductCategoryIDs()!=null&&
+                                        product.getProductCategoryIDs().contains(id)){
+                                    inCategoryProducts.add(product);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                e.printStackTrace();
+            }
+
+            @Override
+            public void onComplete() {
+
+            }
+
+        };
+    }
+    private void initServerDataByNet(){
+        Observable<BaseResponse<PageDataResponse<ProductRootItem>>> productsObs = getAllProducts();
+        Observable<BaseResponse<PageDataResponse<ProductCategoryBean>>> categoryObs = getCategory();
+        Observable<BaseResponse<PageDataResponse<AdBean>>> adObs = getAds();
+        Observable<Boolean> loadFromCacheFile = Observable.just(false);
+        Observable.zip(productsObs, categoryObs, adObs,loadFromCacheFile, getPersistentDataFunction()).subscribeOn(Schedulers.io())
                 .observeOn(Schedulers.io())
-                .subscribe(new Observer<Boolean>() {
-                    @Override
-                    public void onSubscribe(Disposable d) {
-
-                    }
-
-                    @Override
-                    public void onNext(Boolean aBoolean) {
-                        Loger.d("数据库写成功？" + aBoolean);
-                        //Loger.d("所有可显示类型:"+ LocalApi.getCategory().toString());
-                        ProductDao productDao = MyApplication.getDaoSession().getProductDao();
-                        Loger.d("所有商品数量:" + productDao.queryBuilder().count());
-                        MyApplication.StateNow=new State(StateEnum.Ok,"");
-                        for (Product product : productDao.queryBuilder().list()) {
-                            List<Integer> cats = product.getProductCategoryIDs();
-                            if (cats != null && cats.size() != 0) {
-                                String catStr = "";
-                                for (Integer cat : cats) {
-                                    catStr += "," + cat;
-                                }
-                            } else {
-                                Loger.e("product:" + product.getId() + "-no cate");
-                            }
-                        }
-                        ProductCategoryDao productCategoryDao = MyApplication.getDaoSession().getProductCategoryDao();
-                        Loger.d("所有类型数量:" + productCategoryDao.queryBuilder().count());
-                        List<ProductCategory> categories = productCategoryDao.queryBuilder().list();
-                        for (ProductCategory category : categories) {
-
-                            if (category.getParentCategoryCode() == null) {
-                                List<Integer> categoryIds=new ArrayList<Integer>();
-                                int categoryId = category.getCategoryId();
-                                //LocalApi.getProducts(categoryId);
-                                categoryIds.add(categoryId);
-                                Loger.d("categoryId:" + categoryId);
-                                List<ProductCategory> categoryChildList = productCategoryDao.queryBuilder().where(ProductCategoryDao.Properties.ParentCategoryId.eq(categoryId)).list();
-                                if (categoryChildList != null && categoryChildList.size() != 0) {
-                                    String cd = "";
-                                    for (ProductCategory childCategory : categoryChildList) {
-                                        cd += "," + childCategory.getCategoryId();
-                                        categoryIds.add(childCategory.getCategoryId());
-                                    }
-                                }
-                                List<Product> allProduct= productDao.queryBuilder().list();
-                                List<Product> inCategoryProducts = new ArrayList<Product>();
-
-                                for (Product product:allProduct){
-                                    for (int id: categoryIds) {
-                                        if (product.getProductCategoryIDs()!=null&&
-                                                product.getProductCategoryIDs().contains(id)){
-                                            inCategoryProducts.add(product);
-                                            break;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        e.printStackTrace();
-                    }
-
-                    @Override
-                    public void onComplete() {
-
-                    }
-
-                });
+                .subscribe(getPersistentDataObserver());
     }
     /**
      * getAllProducts from net
@@ -235,6 +318,37 @@ public class ServerApi {
                     }
                 });
     }
+    private Observable<BaseResponse<PageDataResponse<AdBean>>> getAds() {
+        Loger.d("广告数据加载中");
+        MyApplication.StateNow = new State(StateEnum.Progressing, "广告数据加载中");
+        return Observable.timer(1, TimeUnit.SECONDS)
+                .subscribeOn(Schedulers.io())
+                .observeOn(Schedulers.io())
+                .map(new Function<Long, StoreTroncellApi>() {
+                    @Override
+                    public StoreTroncellApi apply(@NonNull Long aLong) throws Exception {
+                        return getStoreApiService();
+                    }
+                }).flatMap(new Function<StoreTroncellApi, ObservableSource<BaseResponse<PageDataResponse<AdBean>>>>() {
+                    @Override
+                    public ObservableSource<BaseResponse<PageDataResponse<AdBean>>> apply(@NonNull StoreTroncellApi storeTroncellApi) throws Exception {
+                        return storeTroncellApi.getAds(setting.getDeviceKey())
+                                .map(new Function<BaseResponse<PageDataResponse<AdBean>>, BaseResponse<PageDataResponse<AdBean>>>() {
+                                    @Override
+                                    public BaseResponse<PageDataResponse<AdBean>> apply(@NonNull BaseResponse<PageDataResponse<AdBean>> response) throws Exception {
+                                        if (response.isOK()) {
+                                            return response;
+                                        } else {
+                                            throw new Exception(response.getMessage());
+                                        }
+                                    }
+                                })
+                                .retryWhen(RetryWithDelay.crate())
+                                .subscribeOn(Schedulers.io())
+                                .observeOn(Schedulers.io());
+                    }
+                });
+    }
 
     private StoreTroncellApi getStoreApiService() throws Exception {
         okhttp3.OkHttpClient.Builder okBuilder = new OkHttpClient.Builder();
@@ -250,5 +364,6 @@ public class ServerApi {
         StoreTroncellApi saasApiService = retrofit.create(StoreTroncellApi.class);
         return saasApiService;
     }
+
 
 }

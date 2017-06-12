@@ -53,6 +53,52 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
         </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/set_bg_res_view"
+            android:padding="@dimen/activity_vertical_margin"
+            android:layout_gravity="center_vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:textStyle="bold"
+                android:text="背景资源文件设置"
+                android:gravity="center_vertical|left"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+            <TextView
+                android:id="@+id/res_view"
+                android:gravity="center_vertical|right"
+                android:text="点击设置"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:padding="@dimen/activity_vertical_margin">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center_vertical|left"
+                android:text="是否启动本地json缓存数据"
+                android:textStyle="bold" />
+
+            <Switch
+                android:paddingLeft="@dimen/activity_horizontal_margin"
+                android:id="@+id/use_cache_sw"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:textOff="否"
+                android:textOn="是" />
+        </LinearLayout>
+
         <LinearLayout
             android:padding="@dimen/activity_vertical_margin"
             android:layout_gravity="center_vertical"
@@ -73,7 +119,6 @@
                 android:layout_height="wrap_content" />
         </LinearLayout>
         <LinearLayout
-            android:id="@+id/set_bg_res_view"
             android:padding="@dimen/activity_vertical_margin"
             android:layout_gravity="center_vertical"
             android:layout_width="match_parent"
@@ -81,14 +126,14 @@
 
             <TextView
                 android:textStyle="bold"
-                android:text="背景资源文件设置"
+                android:text="广告图片默认持续时间（秒）"
                 android:gravity="center_vertical|left"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
-            <TextView
-                android:id="@+id/res_view"
+            <EditText
+                android:inputType="number"
+                android:id="@+id/play_time_ad_view"
                 android:gravity="center_vertical|right"
-                android:text="点击设置"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
         </LinearLayout>
