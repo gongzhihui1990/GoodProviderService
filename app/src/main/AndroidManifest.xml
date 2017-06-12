@@ -44,7 +44,7 @@
             android:name=".activity.SettingActivity"
             android:label="@string/title_activity_set" />
         <activity
-            android:name=".activity.Settings2Activity"
+            android:name=".activity.SrcDrawableSettingActivity"
             android:label="@string/title_activity_settings2"></activity>
     </application>
 

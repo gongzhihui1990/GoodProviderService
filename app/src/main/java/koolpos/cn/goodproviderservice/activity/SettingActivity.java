@@ -1,6 +1,8 @@
 package koolpos.cn.goodproviderservice.activity;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.support.annotation.Nullable;
 import android.support.v7.app.ActionBar;
 import android.view.Menu;
@@ -39,8 +41,10 @@ public class SettingActivity extends BaseActivity {
     TextView lastView ;
     @BindView(R.id.internal_ad_view)
     EditText adInternalView;
-    private Setting setting;
+    Setting setting;
 
+    @BindView(R.id.set_bg_res_view)
+    View set_bg_res_view;
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -48,7 +52,6 @@ public class SettingActivity extends BaseActivity {
         setting = (Setting) getIntent().getSerializableExtra(Setting.class.getName());
         setupActionBar();
         renderView(setting);
-
     }
 
     @Override
@@ -122,5 +125,11 @@ public class SettingActivity extends BaseActivity {
                 lastView.setText(new SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.CHINA).format(setting.getLastUpdateTime()));
             }
         }
+        set_bg_res_view.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(getBaseContext(),SrcDrawableSettingActivity.class));
+            }
+        });
     }
 }

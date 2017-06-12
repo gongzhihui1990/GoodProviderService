@@ -228,9 +228,20 @@ public class SrcFileApi {
         Loger.i(targetFile + "初始化成功");
 
     }
+    public static void resetFileSrc(ImageEnum imageEnum, String fileName) throws IOException {
+        File targetFile= new File(getImageSrcPath(imageEnum));
+        Loger.i("配置开始重新载入:" + targetFile);
+        if (targetFile.exists()){
+            targetFile.delete();
+        }
+        targetFile.createNewFile();
+        copyFile(targetFile, fileName);
+        Loger.i(targetFile + "初始化成功");
+
+    }
 
     private static void copyFile(File targetFile, String fileName) throws IOException {
-        InputStream inputStream = MyApplication.getContext().getAssets().open(fileName);
+        InputStream inputStream =new FileInputStream(fileName);// MyApplication.getContext().getAssets().open(fileName);
         FileOutputStream fileOutputStream = new FileOutputStream(targetFile);
         byte[] buffer = new byte[512];
         int count = 0;
