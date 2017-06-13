@@ -1,10 +1,11 @@
 package koolpos.cn.goodproviderservice.api;
 
+import android.content.Intent;
+import android.util.Log;
+
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.jakewharton.retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
-
-import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -56,8 +57,10 @@ public class ServerApi {
     public void initServerData() {
         Loger.i("数据开始加载");
         if (setting.getLoadCacheFirst()){
+            Loger.i("数据开始加载-文件缓存");
             initServerDataByCacheFile();
         }else {
+            Loger.i("数据开始加载-网络请求");
             initServerDataByNet();
         }
     }
@@ -182,7 +185,7 @@ public class ServerApi {
                 Loger.d("数据库写成功？" + aBoolean);
                 ProductDao productDao = MyApplication.getDaoSession().getProductDao();
                 Loger.d("所有商品数量:" + productDao.queryBuilder().count());
-                MyApplication.StateNow=new State(StateEnum.Ok,"");
+                MyApplication.StateNow=new State(StateEnum.Progressing,"本地加载中");
                 for (Product product : productDao.queryBuilder().list()) {
                     List<Integer> cats = product.getProductCategoryIDs();
                     if (cats != null && cats.size() != 0) {
@@ -227,10 +230,17 @@ public class ServerApi {
                         }
                     }
                 }
+                //应用初始化完成
+                MyApplication.StateNow=new State(StateEnum.Ok,"");
+                MyApplication.getContext().sendBroadcast(new Intent("service.state.ok"));
+
             }
 
             @Override
             public void onError(Throwable e) {
+                e.printStackTrace();
+                Loger.e("error---"+e.getClass().getSimpleName());
+                MyApplication.StateNow=new State(StateEnum.Error,e.getClass().getSimpleName()+":"+e.getMessage());
                 e.printStackTrace();
             }
 
@@ -242,20 +252,21 @@ public class ServerApi {
         };
     }
     private void initServerDataByNet(){
-        Observable<BaseResponse<PageDataResponse<ProductRootItem>>> productsObs = getAllProducts();
-        Observable<BaseResponse<PageDataResponse<ProductCategoryBean>>> categoryObs = getCategory();
-        Observable<BaseResponse<PageDataResponse<AdBean>>> adObs = getAds();
+        Observable<BaseResponse<PageDataResponse<ProductRootItem>>> productsObs = getAllProductsFromNet();
+        Observable<BaseResponse<PageDataResponse<ProductCategoryBean>>> categoryObs = getCategoryFromNet();
+        Observable<BaseResponse<PageDataResponse<AdBean>>> adObs = getAdsFromNet();
         Observable<Boolean> loadFromCacheFile = Observable.just(false);
-        Observable.zip(productsObs, categoryObs, adObs,loadFromCacheFile, getPersistentDataFunction()).subscribeOn(Schedulers.io())
+        Observable.zip(productsObs, categoryObs, adObs,loadFromCacheFile, getPersistentDataFunction())
+                .subscribeOn(Schedulers.io())
                 .observeOn(Schedulers.io())
                 .subscribe(getPersistentDataObserver());
     }
     /**
-     * getAllProducts from net
+     * getAllProductsFromNet from net
      *
      * @return
      */
-    private Observable<BaseResponse<PageDataResponse<ProductRootItem>>> getAllProducts() {
+    private Observable<BaseResponse<PageDataResponse<ProductRootItem>>> getAllProductsFromNet() {
         Loger.d("所有商品数据加载中");
         MyApplication.StateNow = new State(StateEnum.Progressing, "所有商品数据加载中");
         return Observable.timer(1, TimeUnit.SECONDS)
@@ -279,10 +290,10 @@ public class ServerApi {
                                             throw new Exception(response.getMessage());
                                         }
                                     }
-                                })
-                                .retryWhen(RetryWithDelay.crate())
-                                .subscribeOn(Schedulers.io())
-                                .observeOn(Schedulers.io());
+                                });
+//                                .retryWhen(RetryWithDelay.crate());
+//                                .subscribeOn(Schedulers.io())
+//                                .observeOn(Schedulers.io());
                     }
                 });
     }
@@ -354,11 +365,11 @@ public class ServerApi {
         }
     }
     /**
-     * getCategory from net
+     * getCategoryFromNet from net
      *
      * @return
      */
-    private Observable<BaseResponse<PageDataResponse<ProductCategoryBean>>> getCategory() {
+    private Observable<BaseResponse<PageDataResponse<ProductCategoryBean>>> getCategoryFromNet() {
         Loger.d("商品类型数据加载中");
         MyApplication.StateNow = new State(StateEnum.Progressing, "商品类型数据加载中");
         return Observable.timer(1, TimeUnit.SECONDS)
@@ -382,14 +393,14 @@ public class ServerApi {
                                             throw new Exception(response.getMessage());
                                         }
                                     }
-                                })
-                                .retryWhen(RetryWithDelay.crate())
-                                .subscribeOn(Schedulers.io())
-                                .observeOn(Schedulers.io());
+                                });
+//                                .retryWhen(RetryWithDelay.crate());
+//                                .subscribeOn(Schedulers.io())
+//                                .observeOn(Schedulers.io());
                     }
                 });
     }
-    private Observable<BaseResponse<PageDataResponse<AdBean>>> getAds() {
+    private Observable<BaseResponse<PageDataResponse<AdBean>>> getAdsFromNet() {
         Loger.d("广告数据加载中");
         MyApplication.StateNow = new State(StateEnum.Progressing, "广告数据加载中");
         return Observable.timer(1, TimeUnit.SECONDS)
@@ -413,10 +424,10 @@ public class ServerApi {
                                             throw new Exception(response.getMessage());
                                         }
                                     }
-                                })
-                                .retryWhen(RetryWithDelay.crate())
-                                .subscribeOn(Schedulers.io())
-                                .observeOn(Schedulers.io());
+                                });
+//                                .retryWhen(RetryWithDelay.crate());
+//                                .subscribeOn(Schedulers.io())
+//                                .observeOn(Schedulers.io());
                     }
                 });
     }

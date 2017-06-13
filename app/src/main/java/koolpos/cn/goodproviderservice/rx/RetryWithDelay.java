@@ -15,10 +15,10 @@ public class RetryWithDelay implements Function<Observable<Throwable>, Observabl
 
     private final int maxRetries;
     private int retryDelayMillis;
-    private int retryCount;
+    private int retryCount=0;
 
     public static RetryWithDelay crate(){
-        return new RetryWithDelay(5,1);
+        return new RetryWithDelay(3,200);
     }
 
     private RetryWithDelay(int maxRetries, int retryDelayMillis) {
@@ -35,7 +35,7 @@ public class RetryWithDelay implements Function<Observable<Throwable>, Observabl
                     public ObservableSource<?> apply(@NonNull Throwable throwable) throws Exception {
                         if (++retryCount <= maxRetries) {
                             // When this Observable calls onNext, the original Observable will be retried (i.e. re-subscribed).
-                            retryDelayMillis=retryDelayMillis*retryCount;
+                            //retryDelayMillis=retryDelayMillis*retryCount;
                             throwable.printStackTrace();
                             Loger.e("get error, it will try after " + retryDelayMillis
                                     + " millisecond, retry count " + retryCount);

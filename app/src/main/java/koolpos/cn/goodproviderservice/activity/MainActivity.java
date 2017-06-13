@@ -36,11 +36,13 @@ import io.reactivex.schedulers.Schedulers;
 import koolpos.cn.goodproviderservice.MyApplication;
 import koolpos.cn.goodproviderservice.R;
 import koolpos.cn.goodproviderservice.api.ServerApi;
+import koolpos.cn.goodproviderservice.constans.Action;
 import koolpos.cn.goodproviderservice.constans.Constant;
 import koolpos.cn.goodproviderservice.model.response.BaseResponse;
 import koolpos.cn.goodproviderservice.model.response.StoreInfoBean;
 import koolpos.cn.goodproviderservice.mvcDao.greenDao.Setting;
 import koolpos.cn.goodproviderservice.mvcDao.greenDao.SettingDao;
+import koolpos.cn.goodproviderservice.service.LocalIntentService;
 import koolpos.cn.goodproviderservice.util.Loger;
 
 import static android.Manifest.permission.ACCESS_NETWORK_STATE;
@@ -289,12 +291,16 @@ public class MainActivity extends BaseActivity {
                     @Override
                     public void onNext(StoreInfoBean storeInfoBean) {
                         Loger.d("storeInfoBean:" + storeInfoBean.toString());
-                        //TODO
+                        //初始化应用数据
+                        Intent intent = new Intent(getBaseContext(), LocalIntentService.class);
+                        intent.setAction(Action.InitData);
+                        startService(intent);
                         Toast.makeText(MyApplication.getContext(),"注册成功",Toast.LENGTH_LONG).show();
                         //TODO delete useless next line,Test only
                         deviceSetting.setDeviceSn(Build.SERIAL);
                         MyApplication.getDaoSession().getSettingDao().insertOrReplace(deviceSetting);
                         initUI(false);
+
                     }
 
                     @Override

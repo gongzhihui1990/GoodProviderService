@@ -1,5 +1,6 @@
 package koolpos.cn.goodproviderservice;
 
+import android.app.ActivityManager;
 import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
@@ -59,10 +60,12 @@ public class MyApplication extends Application {
         DaoMaster.DevOpenHelper helper = new DaoMaster.DevOpenHelper(this, ENCRYPTED ? "notes-db-encrypted" : "gp-db");
         Database db = ENCRYPTED ? helper.getEncryptedWritableDb("super-secret") : helper.getWritableDb();
         daoSession = new DaoMaster(db).newSession();
-        Intent intent = new Intent(getContext(), LocalIntentService.class);
-        intent.setAction(Action.InitData);
-        Loger.d("start Service");
-        startService(intent);
+        appInit();
     }
 
+    private void appInit(){
+        Intent intent = new Intent(getContext(), LocalIntentService.class);
+        intent.setAction(Action.InitData);
+        startService(intent);
+    }
 }
