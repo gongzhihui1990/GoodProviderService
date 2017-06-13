@@ -3,28 +3,33 @@ package koolpos.cn.goodproviderservice.activity;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.support.annotation.NonNull;
-import android.support.design.widget.Snackbar;
-
 import android.os.Build;
 import android.os.Bundle;
-import android.telecom.TelecomManager;
-import android.telephony.TelephonyManager;
+import android.support.annotation.NonNull;
+import android.support.design.widget.Snackbar;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 import butterknife.BindView;
 import io.reactivex.Observable;
+import io.reactivex.Observer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
@@ -32,15 +37,17 @@ import koolpos.cn.goodproviderservice.MyApplication;
 import koolpos.cn.goodproviderservice.R;
 import koolpos.cn.goodproviderservice.api.ServerApi;
 import koolpos.cn.goodproviderservice.constans.Constant;
+import koolpos.cn.goodproviderservice.model.response.BaseResponse;
+import koolpos.cn.goodproviderservice.model.response.StoreInfoBean;
 import koolpos.cn.goodproviderservice.mvcDao.greenDao.Setting;
 import koolpos.cn.goodproviderservice.mvcDao.greenDao.SettingDao;
 import koolpos.cn.goodproviderservice.util.Loger;
 
-import static android.Manifest.permission.INTERNET;
-import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 import static android.Manifest.permission.ACCESS_NETWORK_STATE;
 import static android.Manifest.permission.ACCESS_WIFI_STATE;
+import static android.Manifest.permission.INTERNET;
 import static android.Manifest.permission.READ_PHONE_STATE;
+import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 
 /**
  * A login screen that offers login via email/password.
@@ -51,18 +58,6 @@ public class MainActivity extends BaseActivity {
      * Id to identity READ_CONTACTS permission request.
      */
     private static final int REQUEST_PERMISSIONS = 1;
-
-    /**
-     * A dummy authentication store containing known user names and passwords.
-     * TODO: remove after connecting to a real authentication system.
-     */
-    private static final String[] DUMMY_CREDENTIALS = new String[]{
-            "foo@example.com:hello", "bar@example.com:world"
-    };
-    /**
-     * Keep track of the login task to ensure we can cancel it if requested.
-     */
-
     // UI references.
     @BindView(R.id.device_sn_view)
     AutoCompleteTextView mDeviceSnView;
@@ -93,7 +88,7 @@ public class MainActivity extends BaseActivity {
     }
 
     private void initUI(final boolean resetting) {
-//        TelephonyManager manager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+    //  TelephonyManager manager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
         Observable.just(Build.SERIAL)
                 .map(new Function<String, SettingContainer>() {
                     @Override
@@ -212,10 +207,6 @@ public class MainActivity extends BaseActivity {
         if (cancel) {
             focusView.requestFocus();
         } else {
-            // Show a progress spinner, and kick off a background task to
-            // perform the user login attempt.
-            //TODO
-            Observable<String> obsReg= new ServerApi(deviceKey).regDevice()
             Setting deviceSetting = MyApplication.getDaoSession()
                     .getSettingDao().queryBuilder()
                     .where(SettingDao.Properties.DeviceSn.eq(deviceKey)).unique();
@@ -227,11 +218,98 @@ public class MainActivity extends BaseActivity {
                 deviceSetting.setDeviceSn(deviceSn);
                 deviceSetting.setDeviceKey(deviceKey);
             }
-            MyApplication.getDaoSession().getSettingDao().insertOrReplace(deviceSetting);
-            initUI(false);
+            checkThenRegister(deviceSetting);
         }
     }
+    //检测设备信息，然后注册
+    private void checkThenRegister(final Setting deviceSetting){
+        Observable<BaseResponse<StoreInfoBean>> deviceInfoObservable = new ServerApi(deviceSetting).getDeviceInfoObservable();
+        deviceInfoObservable
+                .map(new Function<BaseResponse<StoreInfoBean>,StoreInfoBean>() {
+                    @Override
+                    public StoreInfoBean apply(@io.reactivex.annotations.NonNull BaseResponse<StoreInfoBean> deviceInfoResponse) throws Exception {
+                        StoreInfoBean storeInfoBean =deviceInfoResponse.getData();
+                        //TODO replace MYTestSERIAL by Build.SERIAL
+                        if (storeInfoBean.isRegistered() && ! Constant.MYTestSERIAL.equals(storeInfoBean.getMac())){
+                            throw new Exception("设备已被‘"+storeInfoBean.getMac()+"’注册");
+                        }
+                        return storeInfoBean;
+                    }
+                })
+                .subscribe(new Observer<StoreInfoBean>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+                        showProgress(true);
+                    }
+                    @Override
+                    public void onNext(StoreInfoBean storeInfoBean) {
+                        Loger.d("storeInfoBean:" + storeInfoBean.toString());
+                        registerDeviceInfo(storeInfoBean,deviceSetting);
+                    }
 
+                    @Override
+                    public void onError(Throwable e) {
+                        showProgress(false);
+                        Toast.makeText(MyApplication.getContext(),e.getMessage(),Toast.LENGTH_LONG).show();
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        showProgress(false);
+                    }
+                });
+    }
+    private void registerDeviceInfo(StoreInfoBean storeInfoBean,final Setting deviceSetting){
+        Map<String, Object> requestMap=new HashMap<String, Object>();
+        try {
+            JSONObject jsonObject =new JSONObject(storeInfoBean.toString());
+            Iterator iterator = jsonObject.keys();
+            while(iterator.hasNext()){
+                String  key = (String) iterator.next();
+                Object value = jsonObject.opt(key);
+                requestMap.put(key,value);
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        Observable<BaseResponse<StoreInfoBean>> updateDeviceObservable= new ServerApi(deviceSetting).registerDeviceObservable(requestMap) ;
+        updateDeviceObservable  .map(new Function<BaseResponse<StoreInfoBean>,StoreInfoBean>() {
+            @Override
+            public StoreInfoBean apply(@io.reactivex.annotations.NonNull BaseResponse<StoreInfoBean> deviceInfoResponse) throws Exception {
+                StoreInfoBean storeInfoBean = deviceInfoResponse.getData();
+                return storeInfoBean;
+            }
+        })
+                .subscribe(new Observer<StoreInfoBean>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+                        showProgress(true);
+                    }
+                    @Override
+                    public void onNext(StoreInfoBean storeInfoBean) {
+                        Loger.d("storeInfoBean:" + storeInfoBean.toString());
+                        //TODO
+                        Toast.makeText(MyApplication.getContext(),"注册成功",Toast.LENGTH_LONG).show();
+                        //TODO delete useless next line,Test only
+                        deviceSetting.setDeviceSn(Build.SERIAL);
+                        MyApplication.getDaoSession().getSettingDao().insertOrReplace(deviceSetting);
+                        initUI(false);
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        e.printStackTrace();
+                        showProgress(false);
+                        Toast.makeText(MyApplication.getContext(),e.getMessage(),Toast.LENGTH_LONG).show();
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        showProgress(false);
+                    }
+                });
+    }
 
     @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
     private void showProgress(final boolean show) {

@@ -57,7 +57,7 @@ public class SettingActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_setting);
         setting = MyApplication.getSetting();
-        setupActionBar();
+        setUpActionBar();
         renderView();
     }
 
@@ -110,6 +110,10 @@ public class SettingActivity extends BaseActivity {
                             });
 
                 }
+                break;
+            case android.R.id.home:
+                finish();
+                break;
         }
         return true;
     }
@@ -117,7 +121,7 @@ public class SettingActivity extends BaseActivity {
     /**
      * Set up the {@link android.app.ActionBar}, if the API is available.
      */
-    private void setupActionBar() {
+    private void setUpActionBar() {
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             // Show the Up button in the action bar.

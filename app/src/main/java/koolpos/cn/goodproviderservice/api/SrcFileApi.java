@@ -327,7 +327,7 @@ public class SrcFileApi {
         save(allAd.toString(), adJsonFile);
     }
 
-    private static void save(String data, File targetFile) throws IOException {
+    public static void save(String data, File targetFile) throws IOException {
         if (!targetFile.exists()) {
             targetFile.createNewFile();
         } else {

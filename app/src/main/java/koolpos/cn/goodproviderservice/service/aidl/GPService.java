@@ -7,11 +7,19 @@ import android.os.RemoteException;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+
 import koolpos.cn.goodproviderservice.MySPEdit;
 import koolpos.cn.goodproviderservice.api.AIDLResponse;
 import koolpos.cn.goodproviderservice.api.LocalApi;
 import koolpos.cn.goodproviderservice.api.LocalTestApi;
+import koolpos.cn.goodproviderservice.api.SrcFileApi;
 import koolpos.cn.goodproviderservice.service.BaseService;
+import koolpos.cn.goodproviderservice.util.FileUtil;
 import koolpos.cn.goodproviderservice.util.Loger;
 
 public class GPService extends BaseService {
@@ -33,9 +41,15 @@ public class GPService extends BaseService {
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-
             Loger.d("response:"+response.toString());
-            return response.toString();
+            File responseFile = FileUtil.getAidlMessageFile("request_"+request.hashCode());
+            try {
+                SrcFileApi.save(response.toString(),responseFile);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            Loger.d("response in:"+responseFile.getPath());
+            return responseFile.getPath();
         }
     };
     @Override

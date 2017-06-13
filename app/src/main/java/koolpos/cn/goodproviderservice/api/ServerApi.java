@@ -4,13 +4,17 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.jakewharton.retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import io.reactivex.Observable;
 import io.reactivex.ObservableSource;
 import io.reactivex.Observer;
+import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.annotations.NonNull;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Function;
@@ -24,6 +28,7 @@ import koolpos.cn.goodproviderservice.model.response.BaseResponse;
 import koolpos.cn.goodproviderservice.model.response.PageDataResponse;
 import koolpos.cn.goodproviderservice.model.response.ProductCategoryBean;
 import koolpos.cn.goodproviderservice.model.response.ProductRootItem;
+import koolpos.cn.goodproviderservice.model.response.StoreInfoBean;
 import koolpos.cn.goodproviderservice.mvcDao.greenDao.AdDao;
 import koolpos.cn.goodproviderservice.mvcDao.greenDao.Product;
 import koolpos.cn.goodproviderservice.mvcDao.greenDao.ProductCategory;
@@ -282,34 +287,68 @@ public class ServerApi {
                 });
     }
 
-    public Observable<BaseResponse<String>> regDevice(final String body){
+    public Observable<BaseResponse<StoreInfoBean>> getDeviceInfoObservable() {
+        Loger.d("硬件信息查询中");
+        MyApplication.StateNow = new State(StateEnum.Progressing, "硬件信息查询中");
+        return Observable.just("查询")
+                .subscribeOn(Schedulers.io())
+                .observeOn(Schedulers.io())
+                .map(new Function<String, StoreTroncellApi>() {
+                    @Override
+                    public StoreTroncellApi apply(@NonNull String key) throws Exception {
+                        return getStoreApiService();
+                    }
+                }).flatMap(new Function<StoreTroncellApi, ObservableSource<BaseResponse<StoreInfoBean>>>() {
+                    @Override
+                    public ObservableSource<BaseResponse<StoreInfoBean>> apply(@NonNull StoreTroncellApi storeTroncellApi) throws Exception {
+                        return storeTroncellApi.getDeviceInfo(setting.getDeviceKey())
+                                .map(new Function<BaseResponse<StoreInfoBean>, BaseResponse<StoreInfoBean>>() {
+                                    @Override
+                                    public BaseResponse<StoreInfoBean> apply(@NonNull BaseResponse<StoreInfoBean> response) throws Exception {
+                                        if (response.isOK()) {
+                                            return response;
+                                        } else {
+                                            throw new Exception(response.getMessage());
+                                        }
+                                    }
+                                })
+                                .subscribeOn(Schedulers.io())
+                                .observeOn(AndroidSchedulers.mainThread());
+                    }
+                });
+    }
+
+    public Observable<BaseResponse<StoreInfoBean>> registerDeviceObservable(final Map<String,Object> requestMap){
         {
-            Loger.d("注册中");
-            MyApplication.StateNow = new State(StateEnum.Progressing, "注册中");
-            return Observable.timer(1, TimeUnit.SECONDS)
+            Loger.d("注册机具中");
+            MyApplication.StateNow = new State(StateEnum.Progressing, "注册机具中");
+            return Observable.just("注册")
                     .subscribeOn(Schedulers.io())
                     .observeOn(Schedulers.io())
-                    .map(new Function<Long, StoreTroncellApi>() {
+                    .map(new Function<String, StoreTroncellApi>() {
                         @Override
-                        public StoreTroncellApi apply(@NonNull Long aLong) throws Exception {
+                        public StoreTroncellApi apply(@NonNull String body) throws Exception {
                             return getStoreApiService();
                         }
-                    }).flatMap(new Function<StoreTroncellApi, ObservableSource<BaseResponse<String>>>() {
+                    }).flatMap(new Function<StoreTroncellApi, ObservableSource<BaseResponse<StoreInfoBean>>>() {
                         @Override
-                        public ObservableSource<BaseResponse<String>> apply(@NonNull StoreTroncellApi storeTroncellApi) throws Exception {
-                            return storeTroncellApi.register(key,body)
-                                    .map(new Function<BaseResponse<String>, BaseResponse<String>>() {
+                        public ObservableSource<BaseResponse<StoreInfoBean>> apply(@NonNull StoreTroncellApi storeTroncellApi) throws Exception {
+                            Loger.d("key:"+setting.getDeviceKey());
+                            Loger.d("requestMap size:"+requestMap.size());
+                            return storeTroncellApi.register(setting.getDeviceKey(),requestMap)
+                                    .map(new Function<BaseResponse<StoreInfoBean>, BaseResponse<StoreInfoBean>>() {
                                         @Override
-                                        public BaseResponse<String> apply(@NonNull BaseResponse<String> response) throws Exception {
+                                        public BaseResponse<StoreInfoBean> apply(@NonNull BaseResponse<StoreInfoBean> response) throws Exception {
                                             if (response.isOK()) {
                                                 return response;
                                             } else {
+                                                Loger.e("response:"+response);
                                                 throw new Exception(response.getMessage());
                                             }
                                         }
                                     })
                                     .subscribeOn(Schedulers.io())
-                                    .observeOn(Schedulers.io());
+                                    .observeOn(AndroidSchedulers.mainThread());
                         }
                     });
         }

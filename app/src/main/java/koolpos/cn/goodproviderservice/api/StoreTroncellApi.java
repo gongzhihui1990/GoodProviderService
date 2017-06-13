@@ -1,13 +1,18 @@
 package koolpos.cn.goodproviderservice.api;
 
+import java.util.Map;
+
 import io.reactivex.Observable;
 import koolpos.cn.goodproviderservice.model.response.AdBean;
 import koolpos.cn.goodproviderservice.model.response.BaseResponse;
 import koolpos.cn.goodproviderservice.model.response.PageDataResponse;
 import koolpos.cn.goodproviderservice.model.response.ProductCategoryBean;
 import koolpos.cn.goodproviderservice.model.response.ProductRootItem;
+import koolpos.cn.goodproviderservice.model.response.StoreInfoBean;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
+import retrofit2.http.HTTP;
+import retrofit2.http.POST;
 import retrofit2.http.Query;
 
 /**
@@ -15,7 +20,7 @@ import retrofit2.http.Query;
  */
 
 public interface StoreTroncellApi {
-    public static final String HostUrl="http://store.troncell.com";
+    String HostUrl="http://store.troncell.com";
 
     @GET("/api/v1/storesdk/ProductCategories")
     Observable<BaseResponse<PageDataResponse<ProductCategoryBean>>> getProductCategories(@Query("subkey") String subkey);
@@ -23,6 +28,8 @@ public interface StoreTroncellApi {
     Observable<BaseResponse<PageDataResponse<ProductRootItem>>> getProducts(@Query("subkey") String subkey);
     @GET("/api/v1/storesdk/ads")
     Observable<BaseResponse<PageDataResponse<AdBean>>> getAds(@Query("subkey") String subkey);
-    @GET("/api/v1/storesdk/RegisterDevice")
-    Observable<BaseResponse<String>> register(@Query("subkey") String subkey, @Body String body);
+    @POST("/api/v1/storesdk/RegisterDevice")
+    Observable<BaseResponse<StoreInfoBean>> register(@Query("subkey") String subkey, @Body Map<String,Object> requestMap);
+    @GET("/api/v1/storesdk/deviceinfo" )
+    Observable<BaseResponse<StoreInfoBean>> getDeviceInfo(@Query("subkey") String subkey);
 }

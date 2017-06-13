@@ -3,6 +3,7 @@ package koolpos.cn.goodproviderservice.util;
 import android.os.Environment;
 
 import java.io.File;
+import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
@@ -48,6 +49,20 @@ public class FileUtil {
         } catch (Exception e) {
             Loger.e(e.getMessage());
         }
+    }
+    public static File getAidlMessageFile(String messageCode){
+       final  String path =getSdCardPath()+"/goodPro/aidl";
+        File root=new File(path);
+        makeRootDirectory(path);
+        File aidlMessageFile=new File(root,messageCode+".txt");
+        if (!aidlMessageFile.exists()){
+            try {
+                aidlMessageFile.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return  aidlMessageFile;
     }
     private static File getImageCashFile(){
        final  String path =getSdCardPath()+"/goodPro/images";
