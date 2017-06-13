@@ -218,7 +218,7 @@ public class SrcFileApi {
         if (!targetFile.exists() || targetFile.length() == 0) {
             Loger.i(targetFile + " 初始化");
             targetFile.createNewFile();
-            copyFile(targetFile, fileName);
+            copyInnerFile(targetFile, fileName);
         } else {
             Loger.i(targetFile + " 已经存在");
 
@@ -239,6 +239,19 @@ public class SrcFileApi {
 
     }
 
+    private static void copyInnerFile(File targetFile, String fileName) throws IOException {
+        InputStream inputStream = MyApplication.getContext().getAssets().open(fileName);
+        FileOutputStream fileOutputStream = new FileOutputStream(targetFile);
+        byte[] buffer = new byte[512];
+        int count = 0;
+        while ((count = inputStream.read(buffer)) > 0) {
+            fileOutputStream.write(buffer, 0, count);
+        }
+        fileOutputStream.flush();
+        fileOutputStream.close();
+        inputStream.close();
+        Loger.i("copyFile " + fileName + " to " + targetFile.getAbsolutePath() + " success");
+    }
     private static void copyFile(File targetFile, String fileName) throws IOException {
         InputStream inputStream = new FileInputStream(fileName);// MyApplication.getContext().getAssets().open(fileName);
         FileOutputStream fileOutputStream = new FileOutputStream(targetFile);

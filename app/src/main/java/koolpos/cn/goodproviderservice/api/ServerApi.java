@@ -282,6 +282,38 @@ public class ServerApi {
                 });
     }
 
+    public Observable<BaseResponse<String>> regDevice(final String body){
+        {
+            Loger.d("注册中");
+            MyApplication.StateNow = new State(StateEnum.Progressing, "注册中");
+            return Observable.timer(1, TimeUnit.SECONDS)
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(Schedulers.io())
+                    .map(new Function<Long, StoreTroncellApi>() {
+                        @Override
+                        public StoreTroncellApi apply(@NonNull Long aLong) throws Exception {
+                            return getStoreApiService();
+                        }
+                    }).flatMap(new Function<StoreTroncellApi, ObservableSource<BaseResponse<String>>>() {
+                        @Override
+                        public ObservableSource<BaseResponse<String>> apply(@NonNull StoreTroncellApi storeTroncellApi) throws Exception {
+                            return storeTroncellApi.register(key,body)
+                                    .map(new Function<BaseResponse<String>, BaseResponse<String>>() {
+                                        @Override
+                                        public BaseResponse<String> apply(@NonNull BaseResponse<String> response) throws Exception {
+                                            if (response.isOK()) {
+                                                return response;
+                                            } else {
+                                                throw new Exception(response.getMessage());
+                                            }
+                                        }
+                                    })
+                                    .subscribeOn(Schedulers.io())
+                                    .observeOn(Schedulers.io());
+                        }
+                    });
+        }
+    }
     /**
      * getCategory from net
      *

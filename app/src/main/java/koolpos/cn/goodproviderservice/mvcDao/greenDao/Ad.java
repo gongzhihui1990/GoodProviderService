@@ -1,5 +1,7 @@
 package koolpos.cn.goodproviderservice.mvcDao.greenDao;
 
+import com.google.gson.Gson;
+
 import org.greenrobot.greendao.annotation.Convert;
 import org.greenrobot.greendao.annotation.Entity;
 import org.greenrobot.greendao.annotation.Generated;
@@ -224,5 +226,10 @@ public class Ad implements Serializable {
         ad.duration = adBean.getDuration();
         ad.transition = adBean.getTransition();
         return ad;
+    }
+
+    @Override
+    public String toString() {
+        return new Gson().toJson(this);
     }
 }

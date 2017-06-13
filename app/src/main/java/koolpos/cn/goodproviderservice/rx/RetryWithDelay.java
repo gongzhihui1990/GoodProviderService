@@ -36,6 +36,7 @@ public class RetryWithDelay implements Function<Observable<Throwable>, Observabl
                         if (++retryCount <= maxRetries) {
                             // When this Observable calls onNext, the original Observable will be retried (i.e. re-subscribed).
                             retryDelayMillis=retryDelayMillis*retryCount;
+                            throwable.printStackTrace();
                             Loger.e("get error, it will try after " + retryDelayMillis
                                     + " millisecond, retry count " + retryCount);
                             return Observable.timer(retryDelayMillis,

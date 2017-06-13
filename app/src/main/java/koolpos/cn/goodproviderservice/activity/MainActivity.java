@@ -30,6 +30,7 @@ import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
 import koolpos.cn.goodproviderservice.MyApplication;
 import koolpos.cn.goodproviderservice.R;
+import koolpos.cn.goodproviderservice.api.ServerApi;
 import koolpos.cn.goodproviderservice.constans.Constant;
 import koolpos.cn.goodproviderservice.mvcDao.greenDao.Setting;
 import koolpos.cn.goodproviderservice.mvcDao.greenDao.SettingDao;
@@ -214,6 +215,7 @@ public class MainActivity extends BaseActivity {
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
             //TODO
+            Observable<String> obsReg= new ServerApi(deviceKey).regDevice()
             Setting deviceSetting = MyApplication.getDaoSession()
                     .getSettingDao().queryBuilder()
                     .where(SettingDao.Properties.DeviceSn.eq(deviceKey)).unique();

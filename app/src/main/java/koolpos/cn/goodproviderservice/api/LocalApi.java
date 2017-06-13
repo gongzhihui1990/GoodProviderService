@@ -50,6 +50,7 @@ public class LocalApi {
 //                获取广告
                 case "local/get/ad":
                     response.setData(getAd());
+                    break;
 //                获取产品分类
                 case "local/get/category":
                     response.setData(getCategory());
@@ -173,6 +174,7 @@ public class LocalApi {
                 .queryBuilder().list();
         Loger.e("all ad size:" + list.size());
         for (Ad item : list) {
+            Loger.d("getAd " +item.toString());
             adArrayList.add(item);
         }
         Loger.e("all root size:" + adArrayList.size());
