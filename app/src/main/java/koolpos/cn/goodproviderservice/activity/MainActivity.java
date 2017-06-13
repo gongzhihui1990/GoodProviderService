@@ -231,8 +231,7 @@ public class MainActivity extends BaseActivity {
                     @Override
                     public StoreInfoBean apply(@io.reactivex.annotations.NonNull BaseResponse<StoreInfoBean> deviceInfoResponse) throws Exception {
                         StoreInfoBean storeInfoBean =deviceInfoResponse.getData();
-                        //TODO replace MYTestSERIAL by Build.SERIAL
-                        if (storeInfoBean.isRegistered() && ! Constant.MYTestSERIAL.equals(storeInfoBean.getMac())){
+                        if (storeInfoBean.isRegistered() && !  Build.SERIAL.equals(storeInfoBean.getMac())){
                             throw new Exception("设备已被‘"+storeInfoBean.getMac()+"’注册");
                         }
                         return storeInfoBean;
@@ -276,7 +275,7 @@ public class MainActivity extends BaseActivity {
         }
 
         Observable<BaseResponse<StoreInfoBean>> updateDeviceObservable= new ServerApi(deviceSetting).registerDeviceObservable(requestMap) ;
-        updateDeviceObservable  .map(new Function<BaseResponse<StoreInfoBean>,StoreInfoBean>() {
+        updateDeviceObservable .map(new Function<BaseResponse<StoreInfoBean>,StoreInfoBean>() {
             @Override
             public StoreInfoBean apply(@io.reactivex.annotations.NonNull BaseResponse<StoreInfoBean> deviceInfoResponse) throws Exception {
                 StoreInfoBean storeInfoBean = deviceInfoResponse.getData();
@@ -297,7 +296,7 @@ public class MainActivity extends BaseActivity {
                         startService(intent);
                         Toast.makeText(MyApplication.getContext(),"注册成功",Toast.LENGTH_LONG).show();
                         //TODO delete useless next line,Test only
-                        deviceSetting.setDeviceSn(Build.SERIAL);
+                        //deviceSetting.setDeviceSn(Build.SERIAL);
                         MyApplication.getDaoSession().getSettingDao().insertOrReplace(deviceSetting);
                         initUI(false);
 
