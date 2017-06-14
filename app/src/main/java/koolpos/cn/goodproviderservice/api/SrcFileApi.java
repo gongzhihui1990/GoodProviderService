@@ -40,7 +40,7 @@ public class SrcFileApi {
                 .map(new Function<File, File>() {//初始化配置文件
                     @Override
                     public File apply(@NonNull File root) throws Exception {
-                        File rootSrc = new File(root, "cloudSrc.properties");
+                        File rootSrc = new File(root, "cloud_set.properties");
                         if (!rootSrc.exists()) {
                             boolean create = rootSrc.createNewFile();
                             Loger.i("新建文件");
@@ -62,7 +62,7 @@ public class SrcFileApi {
                         }
                         Loger.i("首次初始化");
                         try {
-                            inputStream = MyApplication.getContext().getAssets().open("config.properties");
+                            inputStream = MyApplication.getContext().getAssets().open("cloud_set.properties");
                             fileOutputStream = new FileOutputStream(propertiesFile);
                             Properties properties = new Properties();
                             properties.load(inputStream);
@@ -192,7 +192,7 @@ public class SrcFileApi {
 
     private static Properties getSDProperties() throws IOException {
         File root = Environment.getExternalStorageDirectory();
-        File propertiesFile = new File(root, "cloudSrc.properties");
+        File propertiesFile = new File(root, "cloud_set.properties");
         Properties props = new Properties();
         InputStream in = null;
         try {
@@ -297,6 +297,19 @@ public class SrcFileApi {
     final static String productCategoryFileName = "categoryJson.txt";
     final static String adFileName = "adJson.txt";
 
+    private File getJsonRootFile() throws IOException {
+        Properties properties =getSDProperties();
+        File rootFile = getRootPath(properties);
+        Loger.i("配置开始载入" + rootFile.getAbsolutePath());
+        String jsonPath = properties.getProperty("jsonPath");
+        File jsonRootFile = new File(rootFile, jsonPath);
+        Loger.i("配置开始载入" + jsonRootFile.getAbsolutePath());
+        if (!jsonRootFile.exists()) {
+            jsonRootFile.mkdirs();
+        }
+        return jsonRootFile;
+    }
+    //读取配置文件json位置
     static String getJsonFileToString(String jsonFileName) throws IOException {
         File jsonFile = new File(Environment.getExternalStorageDirectory(), jsonFileName);
         InputStream is = new FileInputStream(jsonFile.getAbsolutePath());
@@ -315,6 +328,7 @@ public class SrcFileApi {
         return jsonStr;
     }
 
+    //写入json文件
     static void save(BaseResponse<PageDataResponse<ProductRootItem>> allProducts,
                      BaseResponse<PageDataResponse<ProductCategoryBean>> allCategory,
                      BaseResponse<PageDataResponse<AdBean>> allAd

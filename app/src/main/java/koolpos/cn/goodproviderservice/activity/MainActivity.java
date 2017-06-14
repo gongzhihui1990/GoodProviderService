@@ -34,6 +34,7 @@ import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
 import koolpos.cn.goodproviderservice.MyApplication;
+import koolpos.cn.goodproviderservice.MySPEdit;
 import koolpos.cn.goodproviderservice.R;
 import koolpos.cn.goodproviderservice.api.ServerApi;
 import koolpos.cn.goodproviderservice.constans.Action;
@@ -91,7 +92,7 @@ public class MainActivity extends BaseActivity {
 
     private void initUI(final boolean resetting) {
     //  TelephonyManager manager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
-        Observable.just(Build.SERIAL)
+        Observable.just(Constant.SERIAL)
                 .map(new Function<String, SettingContainer>() {
                     @Override
                     public SettingContainer apply(@io.reactivex.annotations.NonNull String sn) throws Exception {
@@ -113,7 +114,7 @@ public class MainActivity extends BaseActivity {
                         if (settingContainer.setting == null || resetting) {
                             Loger.d("setting is null," + settingContainer.deviceId);
                             mDeviceSnView.setText(settingContainer.deviceId);
-                            mDeviceSnView.setEnabled(false);
+                            //mDeviceSnView.setEnabled(false);
                             mKeyView.setText(Constant.MYTestKey);
                             mSetKeyButton.setOnClickListener(new OnClickListener() {
                                 @Override
@@ -231,7 +232,7 @@ public class MainActivity extends BaseActivity {
                     @Override
                     public StoreInfoBean apply(@io.reactivex.annotations.NonNull BaseResponse<StoreInfoBean> deviceInfoResponse) throws Exception {
                         StoreInfoBean storeInfoBean =deviceInfoResponse.getData();
-                        if (storeInfoBean.isRegistered() && !  Build.SERIAL.equals(storeInfoBean.getMac())){
+                        if (storeInfoBean.isRegistered() && !  deviceSetting.getDeviceSn().equals(storeInfoBean.getMac())){
                             throw new Exception("设备已被‘"+storeInfoBean.getMac()+"’注册");
                         }
                         return storeInfoBean;
@@ -298,8 +299,9 @@ public class MainActivity extends BaseActivity {
                         //TODO delete useless next line,Test only
                         //deviceSetting.setDeviceSn(Build.SERIAL);
                         MyApplication.getDaoSession().getSettingDao().insertOrReplace(deviceSetting);
+                        Constant.SERIAL=deviceSetting.getDeviceSn();
+                        MySPEdit.getInstance().setMacSN(deviceSetting.getDeviceSn());
                         initUI(false);
-
                     }
 
                     @Override

@@ -12,6 +12,7 @@ import koolpos.cn.goodproviderservice.api.LocalApi;
 import koolpos.cn.goodproviderservice.api.LocalTestApi;
 import koolpos.cn.goodproviderservice.api.SrcFileApi;
 import koolpos.cn.goodproviderservice.constans.Action;
+import koolpos.cn.goodproviderservice.constans.Constant;
 import koolpos.cn.goodproviderservice.constans.State;
 import koolpos.cn.goodproviderservice.constans.StateEnum;
 import koolpos.cn.goodproviderservice.mvcDao.greenDao.DaoMaster;
@@ -36,10 +37,10 @@ public class MyApplication extends Application {
     public static Setting getSetting(){
         Setting deviceSetting = MyApplication.getDaoSession()
                 .getSettingDao().queryBuilder()
-                .where(SettingDao.Properties.DeviceSn.eq(Build.SERIAL)).unique();
+                .where(SettingDao.Properties.DeviceSn.eq(Constant.SERIAL)).unique();
         if (deviceSetting==null){
             deviceSetting=new Setting();
-            deviceSetting.setDeviceSn(Build.SERIAL);
+            deviceSetting.setDeviceSn(Constant.SERIAL);
         }
         return deviceSetting;
     }
@@ -60,6 +61,7 @@ public class MyApplication extends Application {
         DaoMaster.DevOpenHelper helper = new DaoMaster.DevOpenHelper(this, ENCRYPTED ? "notes-db-encrypted" : "gp-db");
         Database db = ENCRYPTED ? helper.getEncryptedWritableDb("super-secret") : helper.getWritableDb();
         daoSession = new DaoMaster(db).newSession();
+        Constant.SERIAL=MySPEdit.getInstance().getMacSN();
         appInit();
     }
 

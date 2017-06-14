@@ -3,6 +3,10 @@ package koolpos.cn.goodproviderservice;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Build;
+import android.text.TextUtils;
+
+import koolpos.cn.goodproviderservice.util.Loger;
 
 @SuppressLint("CommitPrefEdits")
 public class MySPEdit {
@@ -27,5 +31,19 @@ public class MySPEdit {
 		}
 		return _instancePublic;
 	}
+
+	public void setMacSN(String mac) {
+		if (TextUtils.isEmpty(mac)) {
+			mac = Build.SERIAL;
+		}
+		editor.putString("mac", mac).commit();
+	}
+	public String getMacSN() {
+		Loger.d("getMacSN"+ sPreferences.getString("mac",Build.SERIAL));
+		return sPreferences.getString("mac", Build.SERIAL);
+	}
+
+
+
 
 }
