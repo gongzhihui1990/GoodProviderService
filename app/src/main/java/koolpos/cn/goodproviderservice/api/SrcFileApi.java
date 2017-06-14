@@ -35,12 +35,13 @@ import koolpos.cn.goodproviderservice.util.Loger;
  */
 
 public class SrcFileApi {
+    private final static String SdPropertyFileName="cloud_set_2017.properties";
     public static void initSrcProperties() {
         Observable.just(Environment.getExternalStorageDirectory())
                 .map(new Function<File, File>() {//初始化配置文件
                     @Override
                     public File apply(@NonNull File root) throws Exception {
-                        File rootSrc = new File(root, "cloud_set.properties");
+                        File rootSrc = new File(root, SdPropertyFileName);
                         if (!rootSrc.exists()) {
                             boolean create = rootSrc.createNewFile();
                             Loger.i("新建文件");
@@ -192,7 +193,7 @@ public class SrcFileApi {
 
     private static Properties getSDProperties() throws IOException {
         File root = Environment.getExternalStorageDirectory();
-        File propertiesFile = new File(root, "cloud_set.properties");
+        File propertiesFile = new File(root, SdPropertyFileName);
         Properties props = new Properties();
         InputStream in = null;
         try {
@@ -252,6 +253,7 @@ public class SrcFileApi {
         inputStream.close();
         Loger.i("copyFile " + fileName + " to " + targetFile.getAbsolutePath() + " success");
     }
+
     private static void copyFile(File targetFile, String fileName) throws IOException {
         InputStream inputStream = new FileInputStream(fileName);// MyApplication.getContext().getAssets().open(fileName);
         FileOutputStream fileOutputStream = new FileOutputStream(targetFile);
@@ -293,12 +295,12 @@ public class SrcFileApi {
         return path;
     }
 
-    final static String productFileName = "productJson.txt";
-    final static String productCategoryFileName = "categoryJson.txt";
-    final static String adFileName = "adJson.txt";
+    final static String productFileName = "JsonProduct";
+    final static String productCategoryFileName = "JsonCategory";
+    final static String adFileName = "JsonAd";
 
-    private File getJsonRootFile() throws IOException {
-        Properties properties =getSDProperties();
+    private static File getJsonRootFile() throws IOException {
+        Properties properties = getSDProperties();
         File rootFile = getRootPath(properties);
         Loger.i("配置开始载入" + rootFile.getAbsolutePath());
         String jsonPath = properties.getProperty("jsonPath");
@@ -309,9 +311,10 @@ public class SrcFileApi {
         }
         return jsonRootFile;
     }
+
     //读取配置文件json位置
     static String getJsonFileToString(String jsonFileName) throws IOException {
-        File jsonFile = new File(Environment.getExternalStorageDirectory(), jsonFileName);
+        File jsonFile = new File(getJsonRootFile(), jsonFileName);
         InputStream is = new FileInputStream(jsonFile.getAbsolutePath());
         String line; // 用来保存每行读取的内容
         BufferedReader reader = new BufferedReader(new InputStreamReader(is));
@@ -324,7 +327,7 @@ public class SrcFileApi {
         }
         reader.close();
         is.close();
-        String jsonStr= buffer.toString();
+        String jsonStr = buffer.toString();
         return jsonStr;
     }
 
@@ -333,9 +336,9 @@ public class SrcFileApi {
                      BaseResponse<PageDataResponse<ProductCategoryBean>> allCategory,
                      BaseResponse<PageDataResponse<AdBean>> allAd
     ) throws IOException {
-        File productJsonFile = new File(Environment.getExternalStorageDirectory(), productFileName);
-        File categoryJsonFile = new File(Environment.getExternalStorageDirectory(), productCategoryFileName);
-        File adJsonFile = new File(Environment.getExternalStorageDirectory(), adFileName);
+        File productJsonFile = new File(getJsonRootFile(), productFileName);
+        File categoryJsonFile = new File(getJsonRootFile(), productCategoryFileName);
+        File adJsonFile = new File(getJsonRootFile(), adFileName);
         save(allProducts.toString(), productJsonFile);
         save(allCategory.toString(), categoryJsonFile);
         save(allAd.toString(), adJsonFile);

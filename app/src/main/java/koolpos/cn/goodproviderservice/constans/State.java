@@ -1,10 +1,13 @@
 package koolpos.cn.goodproviderservice.constans;
 
+import java.io.Serializable;
+
 /**
  * Created by caroline on 2017/6/5.
  */
 
-public class State {
+public class State implements Serializable{
+    private static final long serialVersionUID = -2125274840180679021L;
     private String desc;
     private StateEnum stateEnum;
 

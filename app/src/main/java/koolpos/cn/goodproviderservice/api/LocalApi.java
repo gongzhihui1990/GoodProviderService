@@ -62,7 +62,8 @@ public class LocalApi {
                     break;
 //                获取状态
                 case "local/get/appState":
-                    response.setData(getAppState().getMessage());
+                    String state =new Gson().toJson(getAppState());
+                    response.setData(state);
                     break;
                 case "local/get/all":
                     response.setData(getAll());
