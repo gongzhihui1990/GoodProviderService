@@ -302,6 +302,7 @@ public class MainActivity extends BaseActivity {
                         Constant.SERIAL=deviceSetting.getDeviceSn();
                         MySPEdit.getInstance().setMacSN(deviceSetting.getDeviceSn());
                         initUI(false);
+
                     }
 
                     @Override
