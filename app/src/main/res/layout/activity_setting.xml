@@ -129,14 +129,18 @@
             <TextView
                 android:textStyle="bold"
                 android:text="广告时间间隔（秒）"
+                android:maxEms="5"
                 android:gravity="center_vertical|left"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
+                android:layout_weight="1"
                 android:layout_height="wrap_content" />
             <EditText
+                android:minWidth="200dp"
+                android:minEms="10"
                 android:inputType="number"
                 android:id="@+id/internal_ad_view"
                 android:gravity="center_vertical|right"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
         </LinearLayout>
         <LinearLayout
@@ -149,13 +153,17 @@
                 android:textStyle="bold"
                 android:text="广告图片默认持续时间（秒）"
                 android:gravity="center_vertical|left"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
+                android:layout_weight="1"
                 android:layout_height="wrap_content" />
             <EditText
+                android:minEms="10"
+                android:minWidth="200dp"
+                android:maxEms="5"
                 android:inputType="number"
                 android:id="@+id/play_time_ad_view"
                 android:gravity="center_vertical|right"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
         </LinearLayout>
         <LinearLayout

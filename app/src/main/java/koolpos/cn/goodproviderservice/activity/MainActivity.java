@@ -39,6 +39,8 @@ import koolpos.cn.goodproviderservice.R;
 import koolpos.cn.goodproviderservice.api.ServerApi;
 import koolpos.cn.goodproviderservice.constans.Action;
 import koolpos.cn.goodproviderservice.constans.Constant;
+import koolpos.cn.goodproviderservice.constans.State;
+import koolpos.cn.goodproviderservice.constans.StateEnum;
 import koolpos.cn.goodproviderservice.model.response.BaseResponse;
 import koolpos.cn.goodproviderservice.model.response.StoreInfoBean;
 import koolpos.cn.goodproviderservice.mvcDao.greenDao.Setting;
@@ -253,6 +255,7 @@ public class MainActivity extends BaseActivity {
                     public void onError(Throwable e) {
                         showProgress(false);
                         Toast.makeText(MyApplication.getContext(),e.getMessage(),Toast.LENGTH_LONG).show();
+                        MyApplication.StateNow=new State(StateEnum.Error,"检测设备信息");
                     }
 
                     @Override
