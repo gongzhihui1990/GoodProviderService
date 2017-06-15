@@ -1,6 +1,7 @@
 package koolpos.cn.goodproviderservice.api;
 
 import android.os.Environment;
+import android.widget.Toast;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -152,6 +153,7 @@ public class SrcFileApi {
                     @Override
                     public void onError(Throwable e) {
                         e.printStackTrace();
+                        Toast.makeText(MyApplication.getContext(),e.getClass().getSimpleName()+":"+e.getMessage(),Toast.LENGTH_LONG).show();
                     }
 
                     @Override
@@ -295,9 +297,9 @@ public class SrcFileApi {
         return path;
     }
 
-    final static String productFileName = "JsonProduct";
-    final static String productCategoryFileName = "JsonCategory";
-    final static String adFileName = "JsonAd";
+    final static String productFileName = "JsonProduct.json";
+    final static String productCategoryFileName = "JsonCategory.json";
+    final static String adFileName = "JsonAd.json";
 
     private static File getJsonRootFile() throws IOException {
         Properties properties = getSDProperties();
