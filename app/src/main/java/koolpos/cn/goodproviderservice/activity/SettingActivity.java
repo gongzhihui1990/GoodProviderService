@@ -8,6 +8,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.Switch;
@@ -49,8 +50,11 @@ public class SettingActivity extends BaseActivity {
     Switch useCacheView;
     Setting setting;
 
-    @BindView(R.id.set_bg_res_view)
-    View set_bg_res_view;
+    @BindView(R.id.res_view)
+    Button res_view;
+
+    @BindView(R.id.res_json_view)
+    Button res_json_view;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -94,7 +98,7 @@ public class SettingActivity extends BaseActivity {
                                 public void onNext(Setting setting) {
                                     setting.setLastUpdateTime(new Date());
                                     MyApplication.getDaoSession().getSettingDao().insertOrReplace(setting);
-                                    Toast.makeText(MyApplication.getContext(), "保存成功", Toast.LENGTH_SHORT);
+                                    Toast.makeText(MyApplication.getContext(), "保存成功", Toast.LENGTH_SHORT).show();
                                     renderView();
                                 }
 
@@ -147,10 +151,16 @@ public class SettingActivity extends BaseActivity {
                 setting.setLoadCacheFirst(isChecked);
             }
         });
-        set_bg_res_view.setOnClickListener(new View.OnClickListener() {
+        res_view.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 startActivity(new Intent(getBaseContext(), SrcDrawableSettingActivity.class));
+            }
+        });
+        res_json_view.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(MyApplication.getContext(),"开发中",Toast.LENGTH_SHORT).show();
             }
         });
     }
