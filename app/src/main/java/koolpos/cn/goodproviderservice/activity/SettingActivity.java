@@ -48,6 +48,8 @@ public class SettingActivity extends BaseActivity {
     EditText adPlayLongView;
     @BindView(R.id.use_cache_sw)
     Switch useCacheView;
+    @BindView(R.id.interval_reset_all_view)
+    EditText intervalResetAllView;
     Setting setting;
 
     @BindView(R.id.res_view)
@@ -85,6 +87,8 @@ public class SettingActivity extends BaseActivity {
                                     setting.setIntervalAd(adInternal);
                                     int adPlayLong = Integer.valueOf(adPlayLongView.getText().toString());
                                     setting.setPlayLongAd(adPlayLong);
+                                    int intervalReset = Integer.valueOf(intervalResetAllView.getText().toString());
+                                    setting.setIntervalReset(intervalReset);
                                     return setting;
                                 }
                             }).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())

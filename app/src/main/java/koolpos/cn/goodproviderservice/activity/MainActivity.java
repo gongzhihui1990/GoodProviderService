@@ -220,6 +220,7 @@ public class MainActivity extends BaseActivity {
                 deviceSetting.setLastUpdateTime(new Date());
                 deviceSetting.setIntervalAd(Constant.Def_AD_INTERNAL);
                 deviceSetting.setPlayLongAd(Constant.Def_AD_PLAY_LONG);
+                deviceSetting.setIntervalReset(Constant.Def_ResetAll_INTERNAL);
                 deviceSetting.setDeviceSn(deviceSn);
                 deviceSetting.setDeviceKey(deviceKey);
             }

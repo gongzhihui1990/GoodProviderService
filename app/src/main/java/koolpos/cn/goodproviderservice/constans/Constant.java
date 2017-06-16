@@ -11,5 +11,6 @@ public class Constant {
     public static String SERIAL = Build.SERIAL;//"00155D6F012E";
     public static final int Def_AD_INTERNAL= 60;
     public static final int Def_AD_PLAY_LONG= 10;
+    public static final int Def_ResetAll_INTERNAL= 10;
 
 }

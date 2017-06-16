@@ -22,6 +22,7 @@ public class Setting implements Serializable {
     @Id
     private Long id;
     private int intervalAd;
+    private int intervalReset;
     private int playLongAd;
     @NotNull
     @Unique
@@ -30,12 +31,13 @@ public class Setting implements Serializable {
     private Date lastUpdateTime;
     private boolean loadCacheFirst;
 
-    @Generated(hash = 487415626)
-    public Setting(Long id, int intervalAd, int playLongAd,
+    @Generated(hash = 1722951986)
+    public Setting(Long id, int intervalAd, int intervalReset, int playLongAd,
             @NotNull String deviceSn, String deviceKey, Date lastUpdateTime,
             boolean loadCacheFirst) {
         this.id = id;
         this.intervalAd = intervalAd;
+        this.intervalReset = intervalReset;
         this.playLongAd = playLongAd;
         this.deviceSn = deviceSn;
         this.deviceKey = deviceKey;
@@ -87,5 +89,11 @@ public class Setting implements Serializable {
     }
     public void setPlayLongAd(int playLongAd) {
         this.playLongAd = playLongAd;
+    }
+    public int getIntervalReset() {
+        return this.intervalReset;
+    }
+    public void setIntervalReset(int intervalReset) {
+        this.intervalReset = intervalReset;
     }
 }
