@@ -2,6 +2,7 @@ package koolpos.cn.goodproviderservice.api;
 
 import android.content.Intent;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -18,6 +19,7 @@ import io.reactivex.Observer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.annotations.NonNull;
 import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
 import io.reactivex.functions.Function4;
 import io.reactivex.schedulers.Schedulers;
@@ -38,9 +40,13 @@ import koolpos.cn.goodproviderservice.mvcDao.greenDao.ProductDao;
 import koolpos.cn.goodproviderservice.mvcDao.greenDao.Setting;
 import koolpos.cn.goodproviderservice.rx.RetryWithDelay;
 import koolpos.cn.goodproviderservice.util.Loger;
+import koolpos.cn.goodproviderservice.util.SimpleToast;
 import okhttp3.OkHttpClient;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
+
+import static koolpos.cn.goodproviderservice.constans.Action.State_Ok;
+import static koolpos.cn.goodproviderservice.constans.Action.State_Update;
 
 /**
  * Created by caroline on 2017/6/11.
@@ -54,6 +60,7 @@ public class ServerApi {
     public ServerApi(Setting setting){
         this.setting=setting;
     }
+    private boolean loadFromCache=false;
     public void initServerData() {
         Loger.i("数据开始加载");
         if (setting.getLoadCacheFirst()){
@@ -66,6 +73,7 @@ public class ServerApi {
     }
 
     private void initServerDataByCacheFile() {
+        loadFromCache=true;
         Observable<BaseResponse<PageDataResponse<ProductRootItem>>> productsObs = getAllProductsByFile();
         Observable<BaseResponse<PageDataResponse<ProductCategoryBean>>> categoryObs = getCategoryByFile();
         Observable<BaseResponse<PageDataResponse<AdBean>>> adObs = getAdsByFile();
@@ -185,7 +193,7 @@ public class ServerApi {
                 Loger.d("数据库写成功？" + aBoolean);
                 ProductDao productDao = MyApplication.getDaoSession().getProductDao();
                 Loger.d("所有商品数量:" + productDao.queryBuilder().count());
-                MyApplication.StateNow=new State(StateEnum.Progressing,"本地加载中");
+                MyApplication.StateNow = new State(StateEnum.Progressing,"本地加载中");
                 for (Product product : productDao.queryBuilder().list()) {
                     List<Integer> cats = product.getProductCategoryIDs();
                     if (cats != null && cats.size() != 0) {
@@ -232,16 +240,49 @@ public class ServerApi {
                 }
                 //应用初始化完成
                 MyApplication.StateNow=new State(StateEnum.Ok,"");
-                MyApplication.getContext().sendBroadcast(new Intent("service.state.ok"));
-
+                MyApplication.getContext().sendBroadcast(new Intent(State_Ok));
+                MyApplication.getContext().sendBroadcast(new Intent(State_Update));
+                Observable.just(true)
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(new Consumer<Boolean>() {
+                            @Override
+                            public void accept(@NonNull Boolean o) throws Exception {
+                                SimpleToast.toast("服务初始化完成");
+                            }
+                        });
+                Loger.d("服务初始化完成");
             }
 
             @Override
-            public void onError(Throwable e) {
+            public void onError(final Throwable e) {
                 e.printStackTrace();
-                Loger.e("error---"+e.getClass().getSimpleName());
-                MyApplication.StateNow=new State(StateEnum.Error,e.getClass().getSimpleName()+":"+e.getMessage());
-                e.printStackTrace();
+                if (!loadFromCache){
+                    initServerDataByCacheFile();
+                    Observable.just(true)
+                            .subscribeOn(Schedulers.io())
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribe(new Consumer<Boolean>() {
+                                @Override
+                                public void accept(@NonNull Boolean o) throws Exception {
+                                    SimpleToast.toast("网络加载失败"+e.getMessage()+"，将进行本地数据加载");
+                                }
+                            });
+                }else{
+                    Observable.just(e)
+                            .subscribeOn(Schedulers.io())
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribe(new Consumer<Throwable>() {
+                                @Override
+                                public void accept(@NonNull Throwable t) throws Exception {
+                                    SimpleToast.toast("加载失败"+t.getMessage().toString());
+                                }
+                            });
+                }
+
+                //Loger.e("error---"+e.getClass().getSimpleName());
+                //MyApplication.StateNow=new State(StateEnum.Error,e.getClass().getSimpleName()+":"+e.getMessage());
+                //e.printStackTrace();
             }
 
             @Override
@@ -252,6 +293,7 @@ public class ServerApi {
         };
     }
     private void initServerDataByNet(){
+        loadFromCache=false;
         Observable<BaseResponse<PageDataResponse<ProductRootItem>>> productsObs = getAllProductsFromNet();
         Observable<BaseResponse<PageDataResponse<ProductCategoryBean>>> categoryObs = getCategoryFromNet();
         Observable<BaseResponse<PageDataResponse<AdBean>>> adObs = getAdsFromNet();

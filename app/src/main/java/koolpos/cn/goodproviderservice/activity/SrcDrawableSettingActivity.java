@@ -31,6 +31,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import koolpos.cn.goodproviderservice.R;
 import koolpos.cn.goodproviderservice.api.SrcFileApi;
+import koolpos.cn.goodproviderservice.constans.Action;
 import koolpos.cn.goodproviderservice.constans.ImageEnum;
 import koolpos.cn.goodproviderservice.util.Loger;
 
@@ -151,6 +152,7 @@ public class SrcDrawableSettingActivity extends BaseActivity {
                 try {
                     SrcFileApi.resetFileSrc(reqImageEnum,filePath);
                     list.getAdapter().notifyDataSetChanged();
+                    sendBroadcast(new Intent(Action.State_Update));
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

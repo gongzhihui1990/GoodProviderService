@@ -63,7 +63,7 @@
 
             <TextView
                 android:textStyle="bold"
-                android:text="背景资源文件设置"
+                android:text="Application背景设置"
                 android:gravity="center_vertical|left"
                 android:layout_width="0dp"
                 android:layout_weight="1"
@@ -75,6 +75,28 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
         </LinearLayout>
+        <LinearLayout
+            android:id="@+id/set_pc_bg_res_view"
+            android:padding="@dimen/activity_vertical_margin"
+            android:layout_gravity="center_vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:textStyle="bold"
+                android:text="ProductCategory背景设置"
+                android:gravity="center_vertical|left"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content" />
+            <Button
+                android:id="@+id/pc_res_view"
+                android:gravity="center"
+                android:text="点击设置"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
         <LinearLayout
             android:padding="@dimen/activity_vertical_margin"
             android:layout_gravity="center_vertical"
@@ -91,7 +113,7 @@
             <Button
                 android:id="@+id/res_json_view"
                 android:gravity="center"
-                android:text="点击设置（beta）"
+                android:text="点击设置"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
         </LinearLayout>

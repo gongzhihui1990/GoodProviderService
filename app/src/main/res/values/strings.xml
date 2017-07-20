@@ -7,7 +7,7 @@
     <string name="prompt_id">管理账号</string>
     <string name="prompt_sn">设备序列号</string>
     <string name="prompt_password">账户密码</string>
-    <string name="action_set_key">设置密钥</string>
+    <string name="action_set_key">激活</string>
     <string name="action_set_key_in_short">设置</string>
     <string name="error_invalid_id">管理账号不合法</string>
     <string name="error_invalid_password">密码不合法</string>

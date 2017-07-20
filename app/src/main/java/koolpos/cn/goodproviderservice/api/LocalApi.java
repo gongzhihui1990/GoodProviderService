@@ -158,7 +158,7 @@ public class LocalApi {
     public static String getCategory() {
         ArrayList<ProductCategory> categoryList = new ArrayList<>();
         List<ProductCategory> list = MyApplication.getDaoSession().getProductCategoryDao()
-                .queryBuilder().list();
+                .queryBuilder().orderAsc(ProductCategoryDao.Properties.CategoryId).list();
         Loger.e("all size:" + list.size());
         for (ProductCategory item : list) {
             if (item.getParentCategoryCode() == null) {

@@ -32,4 +32,6 @@ public interface StoreTroncellApi {
     Observable<BaseResponse<StoreInfoBean>> register(@Query("subkey") String subkey, @Body Map<String,Object> requestMap);
     @GET("/api/v1/storesdk/deviceinfo" )
     Observable<BaseResponse<StoreInfoBean>> getDeviceInfo(@Query("subkey") String subkey);
+    @GET("/api/v1/storesdk/apps" )
+    Observable<BaseResponse<StoreInfoBean>> getSoftWare(@Query("subkey") String subkey);
 }

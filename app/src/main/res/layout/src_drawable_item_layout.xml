@@ -1,12 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:minHeight="82dp"
-    >
-     
-
-
+    android:layout_height="wrap_content"
+    android:minHeight="82dp">
     <LinearLayout
         android:id="@+id/src_type_ll"
         android:layout_alignParentTop="true"

@@ -29,7 +29,11 @@ import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
 import koolpos.cn.goodproviderservice.MyApplication;
 import koolpos.cn.goodproviderservice.R;
+import koolpos.cn.goodproviderservice.constans.Action;
 import koolpos.cn.goodproviderservice.mvcDao.greenDao.Setting;
+import koolpos.cn.goodproviderservice.service.LocalIntentService;
+
+import static koolpos.cn.goodproviderservice.constans.Action.State_Update;
 
 /**
  * Created by caroline on 2017/6/10.
@@ -54,6 +58,8 @@ public class SettingActivity extends BaseActivity {
 
     @BindView(R.id.res_view)
     Button res_view;
+    @BindView(R.id.pc_res_view)
+    Button pc_res_view;
 
     @BindView(R.id.res_json_view)
     Button res_json_view;
@@ -108,12 +114,13 @@ public class SettingActivity extends BaseActivity {
 
                                 @Override
                                 public void onError(Throwable e) {
-
                                 }
 
                                 @Override
                                 public void onComplete() {
-
+                                    Intent intent = new Intent(getBaseContext(), LocalIntentService.class);
+                                    intent.setAction(Action.InitData);
+                                    startService(intent);
                                 }
                             });
 
@@ -143,8 +150,10 @@ public class SettingActivity extends BaseActivity {
         }
         snView.setText(setting.getDeviceSn());
         keyView.setText(setting.getDeviceKey());
+        intervalResetAllView.setText(setting.getIntervalReset()+"");
         adInternalView.setText(setting.getIntervalAd() + "");
         adPlayLongView.setText(setting.getPlayLongAd() + "");
+
         if (setting.getLastUpdateTime() != null) {
             lastView.setText(new SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.CHINA).format(setting.getLastUpdateTime()));
         }
@@ -159,6 +168,12 @@ public class SettingActivity extends BaseActivity {
             @Override
             public void onClick(View v) {
                 startActivity(new Intent(getBaseContext(), SrcDrawableSettingActivity.class));
+            }
+        });
+        pc_res_view.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(getBaseContext(),ProductCategorySettingActivity.class));
             }
         });
         res_json_view.setOnClickListener(new View.OnClickListener() {
