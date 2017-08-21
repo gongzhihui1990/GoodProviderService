@@ -167,7 +167,11 @@ public class ServerApi {
                     ProductDao productDao = MyApplication.getDaoSession().getProductDao();
                     productDao.deleteAll();
                     for (ProductRootItem product : products) {
-                        product.insert(productDao);//写入新的数据
+                        if (product.getP_ProductCategories().size()!=0){
+                            product.insert(productDao);//写入新的数据
+                        }else {
+                            Loger.e("error src---"+product.toString()+"-"+product.getP_ProductCategories().size());
+                        }
                     }
                 }
                 //广告表
@@ -327,6 +331,7 @@ public class ServerApi {
                                     @Override
                                     public BaseResponse<PageDataResponse<ProductRootItem>> apply(@NonNull BaseResponse<PageDataResponse<ProductRootItem>> response) throws Exception {
                                         if (response.isOK()) {
+                                            Loger.d("getAllProductsFromNet:"+response.toString());
                                             return response;
                                         } else {
                                             throw new Exception(response.getMessage());
@@ -461,6 +466,7 @@ public class ServerApi {
                                     @Override
                                     public BaseResponse<PageDataResponse<AdBean>> apply(@NonNull BaseResponse<PageDataResponse<AdBean>> response) throws Exception {
                                         if (response.isOK()) {
+                                            Loger.d("re:"+response.toString());
                                             return response;
                                         } else {
                                             throw new Exception(response.getMessage());
