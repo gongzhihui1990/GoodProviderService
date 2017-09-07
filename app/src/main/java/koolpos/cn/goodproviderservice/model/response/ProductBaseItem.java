@@ -1,8 +1,13 @@
 package koolpos.cn.goodproviderservice.model.response;
 
+import android.text.TextUtils;
+
+import java.util.List;
+
 import koolpos.cn.goodproviderservice.model.BaseBean;
 import koolpos.cn.goodproviderservice.mvcDao.GreenDaoInsert;
 import koolpos.cn.goodproviderservice.mvcDao.greenDao.ProductDao;
+import koolpos.cn.goodproviderservice.util.Loger;
 
 /**
  * Created by Administrator on 2017/6/5.
@@ -27,6 +32,23 @@ abstract class ProductBaseItem extends BaseBean implements GreenDaoInsert<Produc
 //   - created	"2017-06-03T23:37:00.7349884"
 //   - lastUpdated	"2017-06-04T11:12:15.5091985"
 //  -  orderNumber	0
+
+    //New
+//    "onlineStoreInfos": [
+//    {
+//        "id": 74283,
+//            "skuId": 486,
+//            "itemId": 0,
+//            "storeId": null,
+//            "type": 1,
+//            "onlineStoreType": "Taobao",
+//            "pid": null,
+//            "price": 179,
+//            "inventory": 20,
+//            "qrcode": "http://h5.m.taobao.com/alizhanggui/buyer-goto.html?linkType=item&itemId=549892776476&skuId=3348114081350&sellerId=2752545374&displayType=zhinengping&storeid=89078"
+//    }
+//            ]
+//}
     private String id;
     private String itemId;
     private String num;
@@ -45,6 +67,16 @@ abstract class ProductBaseItem extends BaseBean implements GreenDaoInsert<Produc
     private String lastUpdated;
     private String orderNumber;
     private String outerId;
+
+    private List<OnlineStoreInfo> onlineStoreInfos;
+
+    public List<OnlineStoreInfo> getOnlineStoreInfos() {
+        return onlineStoreInfos;
+    }
+
+    public void setOnlineStoreInfos(List<OnlineStoreInfo> onlineStoreInfos) {
+        this.onlineStoreInfos = onlineStoreInfos;
+    }
 
     public String getId() {
         return id;
@@ -95,6 +127,14 @@ abstract class ProductBaseItem extends BaseBean implements GreenDaoInsert<Produc
     }
 
     public String getQrCodeUrl() {
+        if (TextUtils.isEmpty(qrCodeUrl)) {
+            if (onlineStoreInfos != null && onlineStoreInfos.size() != 0) {
+                qrCodeUrl = onlineStoreInfos.get(0).getQrcode();
+            }else {
+                Loger.e("onlineStoreInfos----null");
+            }
+        }
+        Loger.d("qrCodeUrl----" + qrCodeUrl);
         return qrCodeUrl;
     }
 
