@@ -1,7 +1,6 @@
 package koolpos.cn.goodproviderservice.api;
 
 import android.content.Intent;
-import android.util.Log;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -36,7 +35,6 @@ import koolpos.cn.goodproviderservice.mvcDao.greenDao.ProductCategory;
 import koolpos.cn.goodproviderservice.mvcDao.greenDao.ProductCategoryDao;
 import koolpos.cn.goodproviderservice.mvcDao.greenDao.ProductDao;
 import koolpos.cn.goodproviderservice.mvcDao.greenDao.Setting;
-import koolpos.cn.goodproviderservice.rx.RetryWithDelay;
 import koolpos.cn.goodproviderservice.util.Loger;
 import okhttp3.OkHttpClient;
 import retrofit2.Retrofit;

@@ -33,6 +33,7 @@ import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
+import koolpos.cn.goodproviderservice.BuildConfig;
 import koolpos.cn.goodproviderservice.MyApplication;
 import koolpos.cn.goodproviderservice.MySPEdit;
 import koolpos.cn.goodproviderservice.R;
@@ -93,8 +94,8 @@ public class MainActivity extends BaseActivity {
     }
 
     private void initUI(final boolean resetting) {
-    //  TelephonyManager manager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
-        Observable.just(Constant.SERIAL)
+        //  TelephonyManager manager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+        Observable.just(BuildConfig.DEBUG ?"00155D6F012E": Constant.SERIAL)
                 .map(new Function<String, SettingContainer>() {
                     @Override
                     public SettingContainer apply(@io.reactivex.annotations.NonNull String sn) throws Exception {
@@ -115,9 +116,14 @@ public class MainActivity extends BaseActivity {
 
                         if (settingContainer.setting == null || resetting) {
                             Loger.d("setting is null," + settingContainer.deviceId);
-                            mDeviceSnView.setText(settingContainer.deviceId);
                             //mDeviceSnView.setEnabled(false);
-                            mKeyView.setText(Constant.MYTestKey);
+                            if (BuildConfig.DEBUG) {
+                                mKeyView.setText(Constant.MYTestKey);
+                                mDeviceSnView.setText(settingContainer.deviceId);
+                            } else {
+                                mKeyView.setText("");
+                                mDeviceSnView.setText(settingContainer.deviceId);
+                            }
                             mSetKeyButton.setOnClickListener(new OnClickListener() {
                                 @Override
                                 public void onClick(View view) {
@@ -227,16 +233,17 @@ public class MainActivity extends BaseActivity {
             checkThenRegister(deviceSetting);
         }
     }
+
     //检测设备信息，然后注册
-    private void checkThenRegister(final Setting deviceSetting){
+    private void checkThenRegister(final Setting deviceSetting) {
         Observable<BaseResponse<StoreInfoBean>> deviceInfoObservable = new ServerApi(deviceSetting).getDeviceInfoObservable();
         deviceInfoObservable
-                .map(new Function<BaseResponse<StoreInfoBean>,StoreInfoBean>() {
+                .map(new Function<BaseResponse<StoreInfoBean>, StoreInfoBean>() {
                     @Override
                     public StoreInfoBean apply(@io.reactivex.annotations.NonNull BaseResponse<StoreInfoBean> deviceInfoResponse) throws Exception {
-                        StoreInfoBean storeInfoBean =deviceInfoResponse.getData();
-                        if (storeInfoBean.isRegistered() && !  deviceSetting.getDeviceSn().equals(storeInfoBean.getMac())){
-                            throw new Exception("设备已被‘"+storeInfoBean.getMac()+"’注册");
+                        StoreInfoBean storeInfoBean = deviceInfoResponse.getData();
+                        if (storeInfoBean.isRegistered() && !deviceSetting.getDeviceSn().equals(storeInfoBean.getMac())) {
+                            throw new Exception("设备已被‘" + storeInfoBean.getMac() + "’注册");
                         }
                         return storeInfoBean;
                     }
@@ -246,17 +253,18 @@ public class MainActivity extends BaseActivity {
                     public void onSubscribe(Disposable d) {
                         showProgress(true);
                     }
+
                     @Override
                     public void onNext(StoreInfoBean storeInfoBean) {
                         Loger.d("storeInfoBean:" + storeInfoBean.toString());
-                        registerDeviceInfo(storeInfoBean,deviceSetting);
+                        registerDeviceInfo(storeInfoBean, deviceSetting);
                     }
 
                     @Override
                     public void onError(Throwable e) {
                         showProgress(false);
-                        Toast.makeText(MyApplication.getContext(),e.getMessage(),Toast.LENGTH_LONG).show();
-                        MyApplication.StateNow=new State(StateEnum.Error,"检测设备信息");
+                        Toast.makeText(MyApplication.getContext(), e.getMessage(), Toast.LENGTH_LONG).show();
+                        MyApplication.StateNow = new State(StateEnum.Error, "检测设备信息");
                     }
 
                     @Override
@@ -265,22 +273,23 @@ public class MainActivity extends BaseActivity {
                     }
                 });
     }
-    private void registerDeviceInfo(StoreInfoBean storeInfoBean,final Setting deviceSetting){
-        Map<String, Object> requestMap=new HashMap<String, Object>();
+
+    private void registerDeviceInfo(StoreInfoBean storeInfoBean, final Setting deviceSetting) {
+        Map<String, Object> requestMap = new HashMap<String, Object>();
         try {
-            JSONObject jsonObject =new JSONObject(storeInfoBean.toString());
+            JSONObject jsonObject = new JSONObject(storeInfoBean.toString());
             Iterator iterator = jsonObject.keys();
-            while(iterator.hasNext()){
-                String  key = (String) iterator.next();
+            while (iterator.hasNext()) {
+                String key = (String) iterator.next();
                 Object value = jsonObject.opt(key);
-                requestMap.put(key,value);
+                requestMap.put(key, value);
             }
         } catch (JSONException e) {
             e.printStackTrace();
         }
 
-        Observable<BaseResponse<StoreInfoBean>> updateDeviceObservable= new ServerApi(deviceSetting).registerDeviceObservable(requestMap) ;
-        updateDeviceObservable .map(new Function<BaseResponse<StoreInfoBean>,StoreInfoBean>() {
+        Observable<BaseResponse<StoreInfoBean>> updateDeviceObservable = new ServerApi(deviceSetting).registerDeviceObservable(requestMap);
+        updateDeviceObservable.map(new Function<BaseResponse<StoreInfoBean>, StoreInfoBean>() {
             @Override
             public StoreInfoBean apply(@io.reactivex.annotations.NonNull BaseResponse<StoreInfoBean> deviceInfoResponse) throws Exception {
                 StoreInfoBean storeInfoBean = deviceInfoResponse.getData();
@@ -292,6 +301,7 @@ public class MainActivity extends BaseActivity {
                     public void onSubscribe(Disposable d) {
                         showProgress(true);
                     }
+
                     @Override
                     public void onNext(StoreInfoBean storeInfoBean) {
                         Loger.d("storeInfoBean:" + storeInfoBean.toString());
@@ -299,11 +309,11 @@ public class MainActivity extends BaseActivity {
                         Intent intent = new Intent(getBaseContext(), LocalIntentService.class);
                         intent.setAction(Action.InitData);
                         startService(intent);
-                        Toast.makeText(MyApplication.getContext(),"注册成功",Toast.LENGTH_LONG).show();
+                        Toast.makeText(MyApplication.getContext(), "注册成功", Toast.LENGTH_LONG).show();
                         //TODO delete useless next line,Test only
                         //deviceSetting.setDeviceSn(Build.SERIAL);
                         MyApplication.getDaoSession().getSettingDao().insertOrReplace(deviceSetting);
-                        Constant.SERIAL=deviceSetting.getDeviceSn();
+                        Constant.SERIAL = deviceSetting.getDeviceSn();
                         MySPEdit.getInstance().setMacSN(deviceSetting.getDeviceSn());
                         initUI(false);
 
@@ -313,7 +323,7 @@ public class MainActivity extends BaseActivity {
                     public void onError(Throwable e) {
                         e.printStackTrace();
                         showProgress(false);
-                        Toast.makeText(MyApplication.getContext(),e.getMessage(),Toast.LENGTH_LONG).show();
+                        Toast.makeText(MyApplication.getContext(), e.getMessage(), Toast.LENGTH_LONG).show();
                     }
 
                     @Override
