@@ -40,10 +40,10 @@ public class ProductSkuItem extends ProductBaseItem {
     private List<Integer> productCategoryIDs;
 
     public void setProductCategoryIDs(List<ProductCategoryOnlyID> productCategoryOnlyIDs) {
-        this.productCategoryIDs=new ArrayList<>();
-        if ( productCategoryOnlyIDs!=null&&productCategoryOnlyIDs.size()!=0){
-            for (ProductCategoryOnlyID productCategoryOnlyID:productCategoryOnlyIDs) {
-                this. productCategoryIDs.add(productCategoryOnlyID.getId());
+        this.productCategoryIDs = new ArrayList<>();
+        if (productCategoryOnlyIDs != null && productCategoryOnlyIDs.size() != 0) {
+            for (ProductCategoryOnlyID productCategoryOnlyID : productCategoryOnlyIDs) {
+                this.productCategoryIDs.add(productCategoryOnlyID.getId());
             }
         }
     }

@@ -1,3 +1,5 @@
+import java.text.SimpleDateFormat
+
 apply plugin: 'com.android.application'
 apply plugin: 'org.greenrobot.greendao'
 android {
@@ -8,8 +10,8 @@ android {
         applicationId "koolpos.cn.goodproviderservice"
         minSdkVersion 14
         targetSdkVersion 25
-        versionCode 1
-        versionName "1.1"
+        versionCode 2
+        versionName "1.2"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
     }
@@ -32,6 +34,13 @@ android {
         release {
             minifyEnabled false
             signingConfig signingConfigs.release
+            applicationVariants.all { variant ->
+                variant.outputs.each { output ->
+                    def outputFile = output.outputFile
+                    def fileName = "Service_V${versionName}_@${releaseTime()}.apk"
+                    output.outputFile = new File(outputFile.parent, fileName)
+                }
+            }
         }
         debug {
             minifyEnabled false
@@ -39,6 +48,11 @@ android {
         }
     }
 }
+static def releaseTime() {
+    SimpleDateFormat format =new SimpleDateFormat("MMdd_HHmm");
+    return format.format(new Date());
+}
+
 greendao {
     schemaVersion 2;
 }

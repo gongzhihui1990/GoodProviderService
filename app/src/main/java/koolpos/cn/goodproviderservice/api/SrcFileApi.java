@@ -36,7 +36,8 @@ import koolpos.cn.goodproviderservice.util.Loger;
  */
 
 public class SrcFileApi {
-    private final static String SdPropertyFileName="cloud_set_2017.properties";
+    private final static String SdPropertyFileName = "cloud_set_2017.properties";
+
     public static void initSrcProperties() {
         Observable.just(Environment.getExternalStorageDirectory())
                 .map(new Function<File, File>() {//初始化配置文件
@@ -153,7 +154,7 @@ public class SrcFileApi {
                     @Override
                     public void onError(Throwable e) {
                         e.printStackTrace();
-                        Toast.makeText(MyApplication.getContext(),e.getClass().getSimpleName()+":"+e.getMessage(),Toast.LENGTH_LONG).show();
+                        Toast.makeText(MyApplication.getContext(), e.getClass().getSimpleName() + ":" + e.getMessage(), Toast.LENGTH_LONG).show();
                     }
 
                     @Override
@@ -193,6 +194,19 @@ public class SrcFileApi {
         return imageFile;
     }
 
+    private static File getSrcRootPathFile(@NonNull Properties properties) {
+        File rootFile = getRootPath(properties);
+        Loger.i("配置开始载入" + rootFile.getAbsolutePath());
+
+        String imagePath = "src";
+        File imageFile = new File(rootFile, imagePath);
+        Loger.i("配置开始载入" + imageFile.getAbsolutePath());
+
+        if (!imageFile.exists()) {
+            imageFile.mkdirs();
+        }
+        return imageFile;
+    }
     private static Properties getSDProperties() throws IOException {
         File root = Environment.getExternalStorageDirectory();
         File propertiesFile = new File(root, SdPropertyFileName);
@@ -239,7 +253,21 @@ public class SrcFileApi {
         targetFile.createNewFile();
         copyFile(targetFile, fileName);
         Loger.i(targetFile + "初始化成功");
+    }
 
+
+    public static File importFileSrc(String filePath) throws IOException {
+        File dir  = getSrcRootPathFile(getSDProperties());
+        File file =new File(filePath);
+        File targetFile =new File(dir,file.getName());
+        Loger.i("载入资源:" + targetFile);
+        if (targetFile.exists()) {
+            targetFile.delete();
+        }
+        targetFile.createNewFile();
+        copyFile(targetFile, filePath);
+        Loger.i(targetFile + "初始化成功");
+        return targetFile;
     }
 
     private static void copyInnerFile(File targetFile, String fileName) throws IOException {
@@ -298,7 +326,7 @@ public class SrcFileApi {
     }
 
     final static String productFileName = "JsonProduct.json";
-    final static String productCategoryFileName = "JsonCategory.json";
+    public final static String productCategoryFileName = "JsonCategory.json";
     final static String adFileName = "JsonAd.json";
 
     private static File getJsonRootFile() throws IOException {
@@ -315,7 +343,7 @@ public class SrcFileApi {
     }
 
     //读取配置文件json位置
-    static String getJsonFileToString(String jsonFileName) throws IOException {
+    public static String getJsonFileToString(String jsonFileName) throws IOException {
         File jsonFile = new File(getJsonRootFile(), jsonFileName);
         InputStream is = new FileInputStream(jsonFile.getAbsolutePath());
         String line; // 用来保存每行读取的内容
@@ -334,16 +362,22 @@ public class SrcFileApi {
     }
 
     //写入json文件
-    static void save(BaseResponse<PageDataResponse<ProductRootItem>> allProducts,
+    public static void save(BaseResponse<PageDataResponse<ProductRootItem>> allProducts,
                      BaseResponse<PageDataResponse<ProductCategoryBean>> allCategory,
                      BaseResponse<PageDataResponse<AdBean>> allAd
     ) throws IOException {
-        File productJsonFile = new File(getJsonRootFile(), productFileName);
-        File categoryJsonFile = new File(getJsonRootFile(), productCategoryFileName);
-        File adJsonFile = new File(getJsonRootFile(), adFileName);
-        save(allProducts.toString(), productJsonFile);
-        save(allCategory.toString(), categoryJsonFile);
-        save(allAd.toString(), adJsonFile);
+        if (allProducts != null) {
+            File productJsonFile = new File(getJsonRootFile(), productFileName);
+            save(allProducts.toString(), productJsonFile);
+        }
+        if (allCategory != null) {
+            File categoryJsonFile = new File(getJsonRootFile(), productCategoryFileName);
+            save(allCategory.toString(), categoryJsonFile);
+        }
+        if (allAd != null) {
+            File adJsonFile = new File(getJsonRootFile(), adFileName);
+            save(allAd.toString(), adJsonFile);
+        }
     }
 
     public static void save(String data, File targetFile) throws IOException {
