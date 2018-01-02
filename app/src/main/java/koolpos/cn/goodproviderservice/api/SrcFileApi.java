@@ -36,7 +36,10 @@ import koolpos.cn.goodproviderservice.util.Loger;
  */
 
 public class SrcFileApi {
-    private final static String SdPropertyFileName = "cloud_set_2017.properties";
+    public final static String productCategoryFileName = "JsonCategory.json";
+    final static String productFileName = "JsonProduct.json";
+    final static String adFileName = "JsonAd.json";
+    private final static String SdPropertyFileName = "cloud_v20180102.properties";
 
     public static void initSrcProperties() {
         Observable.just(Environment.getExternalStorageDirectory())
@@ -46,9 +49,9 @@ public class SrcFileApi {
                         File rootSrc = new File(root, SdPropertyFileName);
                         if (!rootSrc.exists()) {
                             boolean create = rootSrc.createNewFile();
-                            Loger.i("新建文件");
+                            Loger.i("新建文件" + rootSrc);
                         } else {
-                            Loger.i("已有文件");
+                            Loger.i("已有文件" + rootSrc);
 
                         }
                         return rootSrc;
@@ -60,16 +63,17 @@ public class SrcFileApi {
                         InputStream inputStream = null;
                         FileOutputStream fileOutputStream = null;
                         if (propertiesFile.length() != 0) {
-                            Loger.i("已经初始过");
+                            Loger.e("已经初始过");
                             return propertiesFile;
                         }
-                        Loger.i("首次初始化");
+                        Loger.e("首次初始化");
                         try {
-                            inputStream = MyApplication.getContext().getAssets().open("cloud_set.properties");
+                            inputStream = MyApplication.getContext().getAssets().open("cloud.properties");
                             fileOutputStream = new FileOutputStream(propertiesFile);
                             Properties properties = new Properties();
                             properties.load(inputStream);
                             properties.store(fileOutputStream, new Date().toString());
+                            Loger.d("properties:"+properties.toString());
                         } catch (IOException e1) {
                             e1.printStackTrace();
                         } finally {
@@ -132,7 +136,7 @@ public class SrcFileApi {
                 File bgMainFile = new File(imageFile, bg_main_file);
                 File homeBtnFile = new File(imageFile, bt_home_file);
                 File searchFile = new File(imageFile, bt_search_file);
-                initFileSrc(titleBarFile, "title_bar.png");
+                initFileSrc(titleBarFile, "zrx_title_bar.png");
                 initFileSrc(bgMainFile, "main_bg.png");
                 initFileSrc(homeBtnFile, "bt_home.png");
                 initFileSrc(searchFile, "bt_search.png");
@@ -172,7 +176,8 @@ public class SrcFileApi {
 
     private static File getRootPath(@NonNull Properties properties) {
         File sdFile = Environment.getExternalStorageDirectory();
-        String rootPath = properties.getProperty("rootPath");
+        String rootPath = properties.getProperty("rootPaths");
+        Loger.e("properties:" + properties.stringPropertyNames());
         File rootFile = new File(sdFile, rootPath);
         if (!rootFile.exists()) {
             rootFile.mkdirs();
@@ -182,7 +187,7 @@ public class SrcFileApi {
 
     private static File getImageRootPathFile(@NonNull Properties properties) {
         File rootFile = getRootPath(properties);
-        Loger.i("配置开始载入" + rootFile.getAbsolutePath());
+        Loger.e("配置开始载入" + rootFile.getAbsolutePath());
 
         String imagePath = properties.getProperty("imagePath");
         File imageFile = new File(rootFile, imagePath);
@@ -207,6 +212,7 @@ public class SrcFileApi {
         }
         return imageFile;
     }
+
     private static Properties getSDProperties() throws IOException {
         File root = Environment.getExternalStorageDirectory();
         File propertiesFile = new File(root, SdPropertyFileName);
@@ -233,7 +239,7 @@ public class SrcFileApi {
     private static void initFileSrc(File targetFile, String fileName) throws IOException {
         Loger.i("配置开始载入:" + targetFile);
         if (!targetFile.exists() || targetFile.length() == 0) {
-            Loger.i(targetFile + " 初始化");
+            Loger.i(targetFile + " 初始化...");
             targetFile.createNewFile();
             copyInnerFile(targetFile, fileName);
         } else {
@@ -255,11 +261,10 @@ public class SrcFileApi {
         Loger.i(targetFile + "初始化成功");
     }
 
-
     public static File importFileSrc(String filePath) throws IOException {
-        File dir  = getSrcRootPathFile(getSDProperties());
-        File file =new File(filePath);
-        File targetFile =new File(dir,file.getName());
+        File dir = getSrcRootPathFile(getSDProperties());
+        File file = new File(filePath);
+        File targetFile = new File(dir, file.getName());
         Loger.i("载入资源:" + targetFile);
         if (targetFile.exists()) {
             targetFile.delete();
@@ -281,7 +286,7 @@ public class SrcFileApi {
         fileOutputStream.flush();
         fileOutputStream.close();
         inputStream.close();
-        Loger.i("copyFile " + fileName + " to " + targetFile.getAbsolutePath() + " success");
+        Loger.i("移动资源文件 " + fileName + " 成功");
     }
 
     private static void copyFile(File targetFile, String fileName) throws IOException {
@@ -295,7 +300,7 @@ public class SrcFileApi {
         fileOutputStream.flush();
         fileOutputStream.close();
         inputStream.close();
-        Loger.i("copyFile " + fileName + " to " + targetFile.getAbsolutePath() + " success");
+        Loger.i("移动资源文件 " + fileName + " 成功");
     }
 
     public static String getImageSrcPath(ImageEnum imageEnum) throws IOException {
@@ -324,10 +329,6 @@ public class SrcFileApi {
         path = imageFile.getAbsolutePath();
         return path;
     }
-
-    final static String productFileName = "JsonProduct.json";
-    public final static String productCategoryFileName = "JsonCategory.json";
-    final static String adFileName = "JsonAd.json";
 
     private static File getJsonRootFile() throws IOException {
         Properties properties = getSDProperties();
@@ -363,8 +364,8 @@ public class SrcFileApi {
 
     //写入json文件
     public static void save(BaseResponse<PageDataResponse<ProductRootItem>> allProducts,
-                     BaseResponse<PageDataResponse<ProductCategoryBean>> allCategory,
-                     BaseResponse<PageDataResponse<AdBean>> allAd
+                            BaseResponse<PageDataResponse<ProductCategoryBean>> allCategory,
+                            BaseResponse<PageDataResponse<AdBean>> allAd
     ) throws IOException {
         if (allProducts != null) {
             File productJsonFile = new File(getJsonRootFile(), productFileName);

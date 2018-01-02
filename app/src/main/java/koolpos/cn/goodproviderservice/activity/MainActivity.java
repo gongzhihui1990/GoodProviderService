@@ -122,8 +122,9 @@ public class MainActivity extends BaseActivity {
             }
         });
         renderRegisDevice();
+        //00155D6F012E
         //  TelephonyManager manager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
-        Observable.just(BuildConfig.DEBUG ?"00155D6F012E": Constant.SERIAL)
+        Observable.just(BuildConfig.DEBUG ?"20180e0126fc": Constant.SERIAL)
                 .map(new Function<String, SettingContainer>() {
                     @Override
                     public SettingContainer apply(@io.reactivex.annotations.NonNull String sn) throws Exception {
