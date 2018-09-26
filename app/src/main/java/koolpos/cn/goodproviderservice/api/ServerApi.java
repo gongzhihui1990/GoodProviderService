@@ -25,7 +25,7 @@ import koolpos.cn.goodproviderservice.MyApplication;
 import koolpos.cn.goodproviderservice.constans.State;
 import koolpos.cn.goodproviderservice.constans.StateEnum;
 import koolpos.cn.goodproviderservice.model.response.AdBean;
-import koolpos.cn.goodproviderservice.model.response.BaseResponse;
+import koolpos.cn.goodproviderservice.model.response.BaseResponseV1;
 import koolpos.cn.goodproviderservice.model.response.PageDataResponse;
 import koolpos.cn.goodproviderservice.model.response.ProductCategoryBean;
 import koolpos.cn.goodproviderservice.model.response.ProductRootItem;
@@ -71,71 +71,67 @@ public class ServerApi {
 
     private void initServerDataByCacheFile() {
         loadFromCache=true;
-        Observable<BaseResponse<PageDataResponse<ProductRootItem>>> productsObs = getAllProductsByFile();
-        Observable<BaseResponse<PageDataResponse<ProductCategoryBean>>> categoryObs = getCategoryByFile();
-        Observable<BaseResponse<PageDataResponse<AdBean>>> adObs = getAdsByFile();
+        Observable<BaseResponseV1<PageDataResponse<ProductRootItem>>> productsObs = getAllProductsByFile();
+        Observable<BaseResponseV1<PageDataResponse<ProductCategoryBean>>> categoryObs = getCategoryByFile();
+        Observable<BaseResponseV1<PageDataResponse<AdBean>>> adObs = getAdsByFile();
         Observable<Boolean> loadFromCacheFile = Observable.just(true);
         Observable.zip(productsObs, categoryObs, adObs,loadFromCacheFile, getPersistentDataFunction()).subscribeOn(Schedulers.io())
                 .observeOn(Schedulers.io())
                 .subscribe(getPersistentDataObserver());
     }
-    private Observable<BaseResponse<PageDataResponse<ProductCategoryBean>>> getCategoryByFile() {
+    private Observable<BaseResponseV1<PageDataResponse<ProductCategoryBean>>> getCategoryByFile() {
         return Observable.just(SrcFileApi.productCategoryFileName)
                 .map(new Function<String, String>() {
                     @Override
                     public String apply(@NonNull String fileName) throws Exception {
                         return  SrcFileApi.getJsonFileToString(fileName);
                     }
-                }).map(new Function<String, BaseResponse<PageDataResponse<ProductCategoryBean>>>() {
+                }).map(new Function<String, BaseResponseV1<PageDataResponse<ProductCategoryBean>>>() {
             @Override
-            public BaseResponse<PageDataResponse<ProductCategoryBean>> apply(@NonNull String jsonStr) throws Exception {
-                java.lang.reflect.Type token = new TypeToken<BaseResponse<PageDataResponse<ProductCategoryBean>>>() {}.getType();
+            public BaseResponseV1<PageDataResponse<ProductCategoryBean>> apply(@NonNull String jsonStr) throws Exception {
+                java.lang.reflect.Type token = new TypeToken<BaseResponseV1<PageDataResponse<ProductCategoryBean>>>() {}.getType();
                 return new Gson().fromJson(jsonStr,token);
             }
         });
     }
 
-    private Observable<BaseResponse<PageDataResponse<AdBean>>> getAdsByFile() {
+    private Observable<BaseResponseV1<PageDataResponse<AdBean>>> getAdsByFile() {
         return Observable.just(SrcFileApi.adFileName)
                 .map(new Function<String, String>() {
                     @Override
                     public String apply(@NonNull String fileName) throws Exception {
                         return  SrcFileApi.getJsonFileToString(fileName);
                     }
-                }).map(new Function<String, BaseResponse<PageDataResponse<AdBean>>>() {
+                }).map(new Function<String, BaseResponseV1<PageDataResponse<AdBean>>>() {
                     @Override
-                    public BaseResponse<PageDataResponse<AdBean>> apply(@NonNull String jsonStr) throws Exception {
-                        java.lang.reflect.Type token = new TypeToken<BaseResponse<PageDataResponse<AdBean>> >() {}.getType();
+                    public BaseResponseV1<PageDataResponse<AdBean>> apply(@NonNull String jsonStr) throws Exception {
+                        java.lang.reflect.Type token = new TypeToken<BaseResponseV1<PageDataResponse<AdBean>>>() {}.getType();
                         return new Gson().fromJson(jsonStr,token);
                     }
                 });
     }
-    private Observable<BaseResponse<PageDataResponse<ProductRootItem>>> getAllProductsByFile() {
+    private Observable<BaseResponseV1<PageDataResponse<ProductRootItem>>> getAllProductsByFile() {
         return Observable.just(SrcFileApi.productFileName)
                 .map(new Function<String, String>() {
                     @Override
                     public String apply(@NonNull String fileName) throws Exception {
                         return  SrcFileApi.getJsonFileToString(fileName);
                     }
-                }).map(new Function<String, BaseResponse<PageDataResponse<ProductRootItem>>>() {
+                }).map(new Function<String, BaseResponseV1<PageDataResponse<ProductRootItem>>>() {
                     @Override
-                    public BaseResponse<PageDataResponse<ProductRootItem>> apply(@NonNull String jsonStr) throws Exception {
-                        java.lang.reflect.Type token = new TypeToken<BaseResponse<PageDataResponse<ProductRootItem>>>() {}.getType();
+                    public BaseResponseV1<PageDataResponse<ProductRootItem>> apply(@NonNull String jsonStr) throws Exception {
+                        java.lang.reflect.Type token = new TypeToken<BaseResponseV1<PageDataResponse<ProductRootItem>>>() {}.getType();
                         return new Gson().fromJson(jsonStr,token);
                     }
                 });
     }
 
-    private  Function4 <BaseResponse<PageDataResponse<ProductRootItem>>,
-            BaseResponse<PageDataResponse<ProductCategoryBean>>,
-            BaseResponse<PageDataResponse<AdBean>>,Boolean, Boolean> getPersistentDataFunction(){
-        return new Function4<BaseResponse<PageDataResponse<ProductRootItem>>,
-                BaseResponse<PageDataResponse<ProductCategoryBean>>,
-                BaseResponse<PageDataResponse<AdBean>>,Boolean, Boolean>() {
+    private  Function4 <BaseResponseV1<PageDataResponse<ProductRootItem>>, BaseResponseV1<PageDataResponse<ProductCategoryBean>>, BaseResponseV1<PageDataResponse<AdBean>>,Boolean, Boolean> getPersistentDataFunction(){
+        return new Function4<BaseResponseV1<PageDataResponse<ProductRootItem>>, BaseResponseV1<PageDataResponse<ProductCategoryBean>>, BaseResponseV1<PageDataResponse<AdBean>>,Boolean, Boolean>() {
             @Override
-            public Boolean apply(@NonNull BaseResponse<PageDataResponse<ProductRootItem>> allProducts,
-                                 @NonNull BaseResponse<PageDataResponse<ProductCategoryBean>> allCategory,
-                                 @NonNull BaseResponse<PageDataResponse<AdBean>> addAds,
+            public Boolean apply(@NonNull BaseResponseV1<PageDataResponse<ProductRootItem>> allProducts,
+                                 @NonNull BaseResponseV1<PageDataResponse<ProductCategoryBean>> allCategory,
+                                 @NonNull BaseResponseV1<PageDataResponse<AdBean>> addAds,
                                  @NonNull Boolean loadFromCacheFile) throws Exception {
                 Loger.d("数据全部加载,是否loadFromCacheFile："+loadFromCacheFile);
 
@@ -295,9 +291,9 @@ public class ServerApi {
     }
     private void initServerDataByNet(){
         loadFromCache=false;
-        Observable<BaseResponse<PageDataResponse<ProductRootItem>>> productsObs = getAllProductsFromNet();
-        Observable<BaseResponse<PageDataResponse<ProductCategoryBean>>> categoryObs = getCategoryFromNet();
-        Observable<BaseResponse<PageDataResponse<AdBean>>> adObs = getAdsFromNet();
+        Observable<BaseResponseV1<PageDataResponse<ProductRootItem>>> productsObs = getAllProductsFromNet();
+        Observable<BaseResponseV1<PageDataResponse<ProductCategoryBean>>> categoryObs = getCategoryFromNet();
+        Observable<BaseResponseV1<PageDataResponse<AdBean>>> adObs = getAdsFromNet();
         Observable<Boolean> loadFromCacheFile = Observable.just(false);
         Observable.zip(productsObs, categoryObs, adObs,loadFromCacheFile, getPersistentDataFunction())
                 .subscribeOn(Schedulers.io())
@@ -309,24 +305,24 @@ public class ServerApi {
      *
      * @return
      */
-    private Observable<BaseResponse<PageDataResponse<ProductRootItem>>> getAllProductsFromNet() {
+    private Observable<BaseResponseV1<PageDataResponse<ProductRootItem>>> getAllProductsFromNet() {
         Loger.d("所有商品数据加载中");
         MyApplication.StateNow = new State(StateEnum.Progressing, "所有商品数据加载中");
         return Observable.timer(1, TimeUnit.SECONDS)
                 .subscribeOn(Schedulers.io())
                 .observeOn(Schedulers.io())
-                .map(new Function<Long, StoreTroncellApi>() {
+                .map(new Function<Long, StoreTroncellApiV1>() {
                     @Override
-                    public StoreTroncellApi apply(@NonNull Long aLong) throws Exception {
+                    public StoreTroncellApiV1 apply(@NonNull Long aLong) throws Exception {
                         return getStoreApiService();
                     }
-                }).flatMap(new Function<StoreTroncellApi, ObservableSource<BaseResponse<PageDataResponse<ProductRootItem>>>>() {
+                }).flatMap(new Function<StoreTroncellApiV1, ObservableSource<BaseResponseV1<PageDataResponse<ProductRootItem>>>>() {
                     @Override
-                    public ObservableSource<BaseResponse<PageDataResponse<ProductRootItem>>> apply(@NonNull StoreTroncellApi storeTroncellApi) throws Exception {
+                    public ObservableSource<BaseResponseV1<PageDataResponse<ProductRootItem>>> apply(@NonNull StoreTroncellApiV1 storeTroncellApi) throws Exception {
                         return storeTroncellApi.getProducts(setting.getDeviceKey())
-                                .map(new Function<BaseResponse<PageDataResponse<ProductRootItem>>, BaseResponse<PageDataResponse<ProductRootItem>>>() {
+                                .map(new Function<BaseResponseV1<PageDataResponse<ProductRootItem>>, BaseResponseV1<PageDataResponse<ProductRootItem>>>() {
                                     @Override
-                                    public BaseResponse<PageDataResponse<ProductRootItem>> apply(@NonNull BaseResponse<PageDataResponse<ProductRootItem>> response) throws Exception {
+                                    public BaseResponseV1<PageDataResponse<ProductRootItem>> apply(@NonNull BaseResponseV1<PageDataResponse<ProductRootItem>> response) throws Exception {
                                         if (response.isOK()) {
                                             Loger.d("getAllProductsFromNet:"+response.toString());
                                             return response;
@@ -342,24 +338,24 @@ public class ServerApi {
                 });
     }
 
-    public Observable<BaseResponse<StoreInfoBean>> getDeviceInfoObservable() {
+    public Observable<BaseResponseV1<StoreInfoBean>> getDeviceInfoObservable() {
         Loger.d("硬件信息查询中");
         MyApplication.StateNow = new State(StateEnum.Progressing, "硬件信息查询中");
         return Observable.just("查询")
                 .subscribeOn(Schedulers.io())
                 .observeOn(Schedulers.io())
-                .map(new Function<String, StoreTroncellApi>() {
+                .map(new Function<String, StoreTroncellApiV1>() {
                     @Override
-                    public StoreTroncellApi apply(@NonNull String key) throws Exception {
+                    public StoreTroncellApiV1 apply(@NonNull String key) throws Exception {
                         return getStoreApiService();
                     }
-                }).flatMap(new Function<StoreTroncellApi, ObservableSource<BaseResponse<StoreInfoBean>>>() {
+                }).flatMap(new Function<StoreTroncellApiV1, ObservableSource<BaseResponseV1<StoreInfoBean>>>() {
                     @Override
-                    public ObservableSource<BaseResponse<StoreInfoBean>> apply(@NonNull StoreTroncellApi storeTroncellApi) throws Exception {
+                    public ObservableSource<BaseResponseV1<StoreInfoBean>> apply(@NonNull StoreTroncellApiV1 storeTroncellApi) throws Exception {
                         return storeTroncellApi.getDeviceInfo(setting.getDeviceKey())
-                                .map(new Function<BaseResponse<StoreInfoBean>, BaseResponse<StoreInfoBean>>() {
+                                .map(new Function<BaseResponseV1<StoreInfoBean>, BaseResponseV1<StoreInfoBean>>() {
                                     @Override
-                                    public BaseResponse<StoreInfoBean> apply(@NonNull BaseResponse<StoreInfoBean> response) throws Exception {
+                                    public BaseResponseV1<StoreInfoBean> apply(@NonNull BaseResponseV1<StoreInfoBean> response) throws Exception {
                                         if (response.isOK()) {
                                             return response;
                                         } else {
@@ -373,27 +369,27 @@ public class ServerApi {
                 });
     }
 
-    public Observable<BaseResponse<StoreInfoBean>> registerDeviceObservable(final Map<String,Object> requestMap){
+    public Observable<BaseResponseV1<StoreInfoBean>> registerDeviceObservable(final Map<String,Object> requestMap){
         {
             Loger.d("注册机具中");
             MyApplication.StateNow = new State(StateEnum.Progressing, "注册机具中");
             return Observable.just("注册")
                     .subscribeOn(Schedulers.io())
                     .observeOn(Schedulers.io())
-                    .map(new Function<String, StoreTroncellApi>() {
+                    .map(new Function<String, StoreTroncellApiV1>() {
                         @Override
-                        public StoreTroncellApi apply(@NonNull String body) throws Exception {
+                        public StoreTroncellApiV1 apply(@NonNull String body) throws Exception {
                             return getStoreApiService();
                         }
-                    }).flatMap(new Function<StoreTroncellApi, ObservableSource<BaseResponse<StoreInfoBean>>>() {
+                    }).flatMap(new Function<StoreTroncellApiV1, ObservableSource<BaseResponseV1<StoreInfoBean>>>() {
                         @Override
-                        public ObservableSource<BaseResponse<StoreInfoBean>> apply(@NonNull StoreTroncellApi storeTroncellApi) throws Exception {
+                        public ObservableSource<BaseResponseV1<StoreInfoBean>> apply(@NonNull StoreTroncellApiV1 storeTroncellApi) throws Exception {
                             Loger.d("key:"+setting.getDeviceKey());
                             Loger.d("requestMap size:"+requestMap.size());
                             return storeTroncellApi.register(setting.getDeviceKey(),requestMap)
-                                    .map(new Function<BaseResponse<StoreInfoBean>, BaseResponse<StoreInfoBean>>() {
+                                    .map(new Function<BaseResponseV1<StoreInfoBean>, BaseResponseV1<StoreInfoBean>>() {
                                         @Override
-                                        public BaseResponse<StoreInfoBean> apply(@NonNull BaseResponse<StoreInfoBean> response) throws Exception {
+                                        public BaseResponseV1<StoreInfoBean> apply(@NonNull BaseResponseV1<StoreInfoBean> response) throws Exception {
                                             if (response.isOK()) {
                                                 return response;
                                             } else {
@@ -413,24 +409,24 @@ public class ServerApi {
      *
      * @return
      */
-    private Observable<BaseResponse<PageDataResponse<ProductCategoryBean>>> getCategoryFromNet() {
+    private Observable<BaseResponseV1<PageDataResponse<ProductCategoryBean>>> getCategoryFromNet() {
         Loger.d("商品类型数据加载中");
         MyApplication.StateNow = new State(StateEnum.Progressing, "商品类型数据加载中");
         return Observable.timer(1, TimeUnit.SECONDS)
                 .subscribeOn(Schedulers.io())
                 .observeOn(Schedulers.io())
-                .map(new Function<Long, StoreTroncellApi>() {
+                .map(new Function<Long, StoreTroncellApiV1>() {
                     @Override
-                    public StoreTroncellApi apply(@NonNull Long aLong) throws Exception {
+                    public StoreTroncellApiV1 apply(@NonNull Long aLong) throws Exception {
                         return getStoreApiService();
                     }
-                }).flatMap(new Function<StoreTroncellApi, ObservableSource<BaseResponse<PageDataResponse<ProductCategoryBean>>>>() {
+                }).flatMap(new Function<StoreTroncellApiV1, ObservableSource<BaseResponseV1<PageDataResponse<ProductCategoryBean>>>>() {
                     @Override
-                    public ObservableSource<BaseResponse<PageDataResponse<ProductCategoryBean>>> apply(@NonNull StoreTroncellApi storeTroncellApi) throws Exception {
+                    public ObservableSource<BaseResponseV1<PageDataResponse<ProductCategoryBean>>> apply(@NonNull StoreTroncellApiV1 storeTroncellApi) throws Exception {
                         return storeTroncellApi.getProductCategories(setting.getDeviceKey())
-                                .map(new Function<BaseResponse<PageDataResponse<ProductCategoryBean>>, BaseResponse<PageDataResponse<ProductCategoryBean>>>() {
+                                .map(new Function<BaseResponseV1<PageDataResponse<ProductCategoryBean>>, BaseResponseV1<PageDataResponse<ProductCategoryBean>>>() {
                                     @Override
-                                    public BaseResponse<PageDataResponse<ProductCategoryBean>> apply(@NonNull BaseResponse<PageDataResponse<ProductCategoryBean>> response) throws Exception {
+                                    public BaseResponseV1<PageDataResponse<ProductCategoryBean>> apply(@NonNull BaseResponseV1<PageDataResponse<ProductCategoryBean>> response) throws Exception {
                                         if (response.isOK()) {
                                             return response;
                                         } else {
@@ -444,24 +440,24 @@ public class ServerApi {
                     }
                 });
     }
-    private Observable<BaseResponse<PageDataResponse<AdBean>>> getAdsFromNet() {
+    private Observable<BaseResponseV1<PageDataResponse<AdBean>>> getAdsFromNet() {
         Loger.d("广告数据加载中");
         MyApplication.StateNow = new State(StateEnum.Progressing, "广告数据加载中");
         return Observable.timer(1, TimeUnit.SECONDS)
                 .subscribeOn(Schedulers.io())
                 .observeOn(Schedulers.io())
-                .map(new Function<Long, StoreTroncellApi>() {
+                .map(new Function<Long, StoreTroncellApiV1>() {
                     @Override
-                    public StoreTroncellApi apply(@NonNull Long aLong) throws Exception {
+                    public StoreTroncellApiV1 apply(@NonNull Long aLong) throws Exception {
                         return getStoreApiService();
                     }
-                }).flatMap(new Function<StoreTroncellApi, ObservableSource<BaseResponse<PageDataResponse<AdBean>>>>() {
+                }).flatMap(new Function<StoreTroncellApiV1, ObservableSource<BaseResponseV1<PageDataResponse<AdBean>>>>() {
                     @Override
-                    public ObservableSource<BaseResponse<PageDataResponse<AdBean>>> apply(@NonNull StoreTroncellApi storeTroncellApi) throws Exception {
+                    public ObservableSource<BaseResponseV1<PageDataResponse<AdBean>>> apply(@NonNull StoreTroncellApiV1 storeTroncellApi) throws Exception {
                         return storeTroncellApi.getAds(setting.getDeviceKey())
-                                .map(new Function<BaseResponse<PageDataResponse<AdBean>>, BaseResponse<PageDataResponse<AdBean>>>() {
+                                .map(new Function<BaseResponseV1<PageDataResponse<AdBean>>, BaseResponseV1<PageDataResponse<AdBean>>>() {
                                     @Override
-                                    public BaseResponse<PageDataResponse<AdBean>> apply(@NonNull BaseResponse<PageDataResponse<AdBean>> response) throws Exception {
+                                    public BaseResponseV1<PageDataResponse<AdBean>> apply(@NonNull BaseResponseV1<PageDataResponse<AdBean>> response) throws Exception {
                                         if (response.isOK()) {
                                             Loger.d("re:"+response.toString());
                                             return response;
@@ -477,10 +473,10 @@ public class ServerApi {
                 });
     }
 
-    private StoreTroncellApi getStoreApiService() throws Exception {
+    private StoreTroncellApiV1 getStoreApiService() throws Exception {
         okhttp3.OkHttpClient.Builder okBuilder = new OkHttpClient.Builder();
         okBuilder.connectTimeout(5, TimeUnit.SECONDS);
-        Retrofit retrofit = new Retrofit.Builder().baseUrl(StoreTroncellApi.HostUrl)
+        Retrofit retrofit = new Retrofit.Builder().baseUrl(StoreTroncellApiV1.HostUrl)
                 .client(okBuilder.build())
                 //baseUrl:只要符合格式即可
                 .addConverterFactory(GsonConverterFactory.create())
@@ -488,7 +484,7 @@ public class ServerApi {
                 .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                 //addCallAdapterFactory:设置处理请求结果的工厂类
                 .build();
-        StoreTroncellApi saasApiService = retrofit.create(StoreTroncellApi.class);
+        StoreTroncellApiV1 saasApiService = retrofit.create(StoreTroncellApiV1.class);
         return saasApiService;
     }
 

@@ -3,10 +3,8 @@ package koolpos.cn.goodproviderservice.activity;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -29,7 +27,6 @@ import com.google.gson.reflect.TypeToken;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import butterknife.BindView;
@@ -44,15 +41,11 @@ import io.reactivex.schedulers.Schedulers;
 import koolpos.cn.goodproviderservice.MyApplication;
 import koolpos.cn.goodproviderservice.R;
 import koolpos.cn.goodproviderservice.api.SrcFileApi;
-import koolpos.cn.goodproviderservice.constans.ImageEnum;
-import koolpos.cn.goodproviderservice.model.response.BaseResponse;
+import koolpos.cn.goodproviderservice.model.response.BaseResponseV1;
 import koolpos.cn.goodproviderservice.model.response.PageDataResponse;
 import koolpos.cn.goodproviderservice.model.response.ProductCategoryBean;
-import koolpos.cn.goodproviderservice.mvcDao.greenDao.ProductCategory;
 import koolpos.cn.goodproviderservice.util.FileUtil;
 import koolpos.cn.goodproviderservice.util.Loger;
-
-import static koolpos.cn.goodproviderservice.constans.Action.State_Update;
 
 /**
  * Created by Administrator on 2017/6/12.
@@ -70,10 +63,10 @@ public class ProductCategorySettingActivity extends BaseActivity {
         LinearLayoutManager mLayoutManager = new LinearLayoutManager(getBaseContext());
         mLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         list.setLayoutManager(mLayoutManager);
-        Observable<BaseResponse<PageDataResponse<ProductCategoryBean>>> observable = getCategoryByFile();
+        Observable<BaseResponseV1<PageDataResponse<ProductCategoryBean>>> observable = getCategoryByFile();
         observable.subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Observer<BaseResponse<PageDataResponse<ProductCategoryBean>>>() {
+                .subscribe(new Observer<BaseResponseV1<PageDataResponse<ProductCategoryBean>>>() {
 
                     @Override
                     public void onSubscribe(Disposable d) {
@@ -81,7 +74,7 @@ public class ProductCategorySettingActivity extends BaseActivity {
                     }
 
                     @Override
-                    public void onNext(BaseResponse<PageDataResponse<ProductCategoryBean>> pageDataResponseBaseResponse) {
+                    public void onNext(BaseResponseV1<PageDataResponse<ProductCategoryBean>> pageDataResponseBaseResponse) {
                         adapter = new SrcPropertyAdapter(getBaseContext(), pageDataResponseBaseResponse);
                         list.setAdapter(adapter);
                     }
@@ -99,17 +92,17 @@ public class ProductCategorySettingActivity extends BaseActivity {
 
     }
 
-    private Observable<BaseResponse<PageDataResponse<ProductCategoryBean>>> getCategoryByFile() {
+    private Observable<BaseResponseV1<PageDataResponse<ProductCategoryBean>>> getCategoryByFile() {
         return Observable.just(SrcFileApi.productCategoryFileName)
                 .map(new Function<String, String>() {
                     @Override
                     public String apply(@NonNull String fileName) throws Exception {
                         return SrcFileApi.getJsonFileToString(fileName);
                     }
-                }).map(new Function<String, BaseResponse<PageDataResponse<ProductCategoryBean>>>() {
+                }).map(new Function<String, BaseResponseV1<PageDataResponse<ProductCategoryBean>>>() {
                     @Override
-                    public BaseResponse<PageDataResponse<ProductCategoryBean>> apply(@NonNull String jsonStr) throws Exception {
-                        java.lang.reflect.Type token = new TypeToken<BaseResponse<PageDataResponse<ProductCategoryBean>>>() {
+                    public BaseResponseV1<PageDataResponse<ProductCategoryBean>> apply(@NonNull String jsonStr) throws Exception {
+                        java.lang.reflect.Type token = new TypeToken<BaseResponseV1<PageDataResponse<ProductCategoryBean>>>() {
                         }.getType();
                         return new Gson().fromJson(jsonStr, token);
                     }
@@ -120,9 +113,9 @@ public class ProductCategorySettingActivity extends BaseActivity {
 
         private LayoutInflater mInflater;
         private List<ProductCategoryBean> mData = new ArrayList<>();
-        private BaseResponse<PageDataResponse<ProductCategoryBean>> mResponse;
+        private BaseResponseV1<PageDataResponse<ProductCategoryBean>> mResponse;
 
-        public SrcPropertyAdapter(Context context, BaseResponse<PageDataResponse<ProductCategoryBean>> response) {
+        public SrcPropertyAdapter(Context context, BaseResponseV1<PageDataResponse<ProductCategoryBean>> response) {
             mInflater = LayoutInflater.from(context);
             List<ProductCategoryBean> mDataTmp = response.getData().getData();
             for (ProductCategoryBean data:mDataTmp){

@@ -20,6 +20,40 @@ public class ProductCategoryBean extends BaseBean implements GreenDaoInsert<Prod
 //    isLocal	false
 //    isSpecial	false
 //    fromType	"Taobao"
+
+
+//    {
+//        "totalCount": 0,
+//            "items": [
+//        {
+//            "name": "string",
+//                "organizationUnitId": 0,
+//                "resourceType": "string",
+//                "type": "Single",
+//                "auditStatus": "Offline",
+//                "adsTags": [
+//            {
+//                "id": 0,
+//                    "name": "string"
+//            }
+//      ],
+//            "productAttributes": "string",
+//                "ageScope": "string",
+//                "gender": "string",
+//                "orderNumber": 0,
+//                "fileUrl": "string",
+//                "isMine": true,
+//                "isDeleted": true,
+//                "deleterUserId": 0,
+//                "deletionTime": "2018-07-25T09:02:31.943Z",
+//                "lastModificationTime": "2018-07-25T09:02:31.943Z",
+//                "lastModifierUserId": 0,
+//                "creationTime": "2018-07-25T09:02:31.943Z",
+//                "creatorUserId": 0,
+//                "id": 0
+//        }
+//  ]
+//    }
     private int id;
 
     private String categoryCode;

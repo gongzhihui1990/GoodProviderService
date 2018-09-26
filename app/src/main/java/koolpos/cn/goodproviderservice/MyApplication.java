@@ -1,12 +1,9 @@
 package koolpos.cn.goodproviderservice;
 
-import android.app.ActivityManager;
 import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
 import android.net.wifi.WifiManager;
-import android.os.Build;
-import android.util.Log;
 
 import com.jakewharton.retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 
@@ -20,19 +17,15 @@ import io.reactivex.Observer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.annotations.NonNull;
 import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
 import io.reactivex.functions.Predicate;
 import io.reactivex.schedulers.Schedulers;
-import koolpos.cn.goodproviderservice.api.LocalApi;
-import koolpos.cn.goodproviderservice.api.LocalTestApi;
-import koolpos.cn.goodproviderservice.api.SrcFileApi;
-import koolpos.cn.goodproviderservice.api.StoreTroncellApi;
+import koolpos.cn.goodproviderservice.api.StoreTroncellApiV1;
 import koolpos.cn.goodproviderservice.constans.Action;
 import koolpos.cn.goodproviderservice.constans.Constant;
 import koolpos.cn.goodproviderservice.constans.State;
 import koolpos.cn.goodproviderservice.constans.StateEnum;
-import koolpos.cn.goodproviderservice.model.response.BaseResponse;
+import koolpos.cn.goodproviderservice.model.response.BaseResponseV1;
 import koolpos.cn.goodproviderservice.model.response.StoreInfoBean;
 import koolpos.cn.goodproviderservice.mvcDao.greenDao.DaoMaster;
 import koolpos.cn.goodproviderservice.mvcDao.greenDao.DaoSession;
@@ -105,14 +98,14 @@ public class MyApplication extends Application {
 
     private void querySoftWare() {
         Observable.interval(3, 10, TimeUnit.SECONDS)
-                .map(new Function<Long, StoreTroncellApi>() {
+                .map(new Function<Long, StoreTroncellApiV1>() {
                     @Override
-                    public StoreTroncellApi apply(@NonNull Long aLong) throws Exception {
+                    public StoreTroncellApiV1 apply(@NonNull Long aLong) throws Exception {
                         return getStoreApiService();
                     }
-                }).filter(new Predicate<StoreTroncellApi>() {
+                }).filter(new Predicate<StoreTroncellApiV1>() {
             @Override
-            public boolean test(@NonNull StoreTroncellApi storeTroncellApi) throws Exception {
+            public boolean test(@NonNull StoreTroncellApiV1 storeTroncellApi) throws Exception {
                 if (daoSession == null) {
                     return false;
                 }
@@ -125,24 +118,24 @@ public class MyApplication extends Application {
                 }
                 return true;
             }
-        }).flatMap(new Function<StoreTroncellApi, ObservableSource<BaseResponse<StoreInfoBean>>>() {
+        }).flatMap(new Function<StoreTroncellApiV1, ObservableSource<BaseResponseV1<StoreInfoBean>>>() {
             @Override
-            public ObservableSource<BaseResponse<StoreInfoBean>> apply(@NonNull StoreTroncellApi storeTroncellApi) throws Exception {
+            public ObservableSource<BaseResponseV1<StoreInfoBean>> apply(@NonNull StoreTroncellApiV1 storeTroncellApi) throws Exception {
                 Setting setting = daoSession.getSettingDao().queryBuilder().where(SettingDao.Properties.DeviceSn.eq(Constant.SERIAL)).unique();
                 String subKey = setting.getDeviceKey();
-                Observable<BaseResponse<StoreInfoBean>> response = storeTroncellApi.getSoftWare(subKey);
+                Observable<BaseResponseV1<StoreInfoBean>> response = storeTroncellApi.getSoftWare(subKey);
                 return response;
             }
         }).subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Observer<BaseResponse<StoreInfoBean>>() {
+                .subscribe(new Observer<BaseResponseV1<StoreInfoBean>>() {
                     @Override
                     public void onSubscribe(Disposable d) {
 
                     }
 
                     @Override
-                    public void onNext(BaseResponse<StoreInfoBean> storeInfoBeanBaseResponse) {
+                    public void onNext(BaseResponseV1<StoreInfoBean> storeInfoBeanBaseResponse) {
 
                     }
 
@@ -158,10 +151,10 @@ public class MyApplication extends Application {
                 });
     }
 
-    private StoreTroncellApi getStoreApiService() throws Exception {
+    private StoreTroncellApiV1 getStoreApiService() throws Exception {
         okhttp3.OkHttpClient.Builder okBuilder = new OkHttpClient.Builder();
         okBuilder.connectTimeout(5, TimeUnit.SECONDS);
-        Retrofit retrofit = new Retrofit.Builder().baseUrl(StoreTroncellApi.HostUrl)
+        Retrofit retrofit = new Retrofit.Builder().baseUrl(StoreTroncellApiV1.HostUrl)
                 .client(okBuilder.build())
                 //baseUrl:只要符合格式即可
                 .addConverterFactory(GsonConverterFactory.create())
@@ -169,7 +162,7 @@ public class MyApplication extends Application {
                 .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                 //addCallAdapterFactory:设置处理请求结果的工厂类
                 .build();
-        StoreTroncellApi saasApiService = retrofit.create(StoreTroncellApi.class);
+        StoreTroncellApiV1 saasApiService = retrofit.create(StoreTroncellApiV1.class);
         return saasApiService;
     }
 

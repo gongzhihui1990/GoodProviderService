@@ -96,8 +96,11 @@ public class LocalApi {
     private static String getProductsByCategoryId(String categoryId) {
         int category = Integer.valueOf(categoryId);
         List<Product> allProduct = MyApplication.getDaoSession().getProductDao().queryBuilder().list();
+        Loger.d("所有商品数量:" + MyApplication.getDaoSession().getProductDao().queryBuilder().count());
+
         List<Product> inCategoryProducts = new ArrayList<Product>();
         if (category == -1){
+            Loger.d("allProduct size:" + allProduct.size());
             inCategoryProducts.addAll(allProduct);
             return new Gson().toJson(inCategoryProducts);
         }

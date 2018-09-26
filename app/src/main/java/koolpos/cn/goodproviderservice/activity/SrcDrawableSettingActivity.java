@@ -43,6 +43,8 @@ public class SrcDrawableSettingActivity extends BaseActivity {
     @BindView(R.id.src_list_view)
     RecyclerView list;
 
+    @BindView(R.id.btnBack)
+    Button btnBack;
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -51,6 +53,12 @@ public class SrcDrawableSettingActivity extends BaseActivity {
         mLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         list.setLayoutManager(mLayoutManager);
         list.setAdapter(new SrcPropertyAdapter(getBaseContext()));
+        btnBack.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
     }
 
 

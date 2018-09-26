@@ -25,7 +25,7 @@ import io.reactivex.schedulers.Schedulers;
 import koolpos.cn.goodproviderservice.MyApplication;
 import koolpos.cn.goodproviderservice.constans.ImageEnum;
 import koolpos.cn.goodproviderservice.model.response.AdBean;
-import koolpos.cn.goodproviderservice.model.response.BaseResponse;
+import koolpos.cn.goodproviderservice.model.response.BaseResponseV1;
 import koolpos.cn.goodproviderservice.model.response.PageDataResponse;
 import koolpos.cn.goodproviderservice.model.response.ProductCategoryBean;
 import koolpos.cn.goodproviderservice.model.response.ProductRootItem;
@@ -349,12 +349,17 @@ public class SrcFileApi {
         InputStream is = new FileInputStream(jsonFile.getAbsolutePath());
         String line; // 用来保存每行读取的内容
         BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-        line = reader.readLine(); // 读取第一行
+        // 读取第一行
+        line = reader.readLine();
         StringBuffer buffer = new StringBuffer();
-        while (line != null) { // 如果 line 为空说明读完了
-            buffer.append(line); // 将读到的内容添加到 buffer 中
-            buffer.append("\n"); // 添加换行符
-            line = reader.readLine(); // 读取下一行
+        // 如果 line 为空说明读完了
+        while (line != null) {
+            // 将读到的内容添加到 buffer 中
+            buffer.append(line);
+            // 添加换行符
+            buffer.append("\n");
+            // 读取下一行
+            line = reader.readLine();
         }
         reader.close();
         is.close();
@@ -363,9 +368,9 @@ public class SrcFileApi {
     }
 
     //写入json文件
-    public static void save(BaseResponse<PageDataResponse<ProductRootItem>> allProducts,
-                            BaseResponse<PageDataResponse<ProductCategoryBean>> allCategory,
-                            BaseResponse<PageDataResponse<AdBean>> allAd
+    public static void save(BaseResponseV1<PageDataResponse<ProductRootItem>> allProducts,
+                            BaseResponseV1<PageDataResponse<ProductCategoryBean>> allCategory,
+                            BaseResponseV1<PageDataResponse<AdBean>> allAd
     ) throws IOException {
         if (allProducts != null) {
             File productJsonFile = new File(getJsonRootFile(), productFileName);

@@ -45,7 +45,7 @@ import koolpos.cn.goodproviderservice.constans.Action;
 import koolpos.cn.goodproviderservice.constans.Constant;
 import koolpos.cn.goodproviderservice.constans.State;
 import koolpos.cn.goodproviderservice.constans.StateEnum;
-import koolpos.cn.goodproviderservice.model.response.BaseResponse;
+import koolpos.cn.goodproviderservice.model.response.BaseResponseV1;
 import koolpos.cn.goodproviderservice.model.response.StoreInfoBean;
 import koolpos.cn.goodproviderservice.mvcDao.greenDao.Setting;
 import koolpos.cn.goodproviderservice.mvcDao.greenDao.SettingDao;
@@ -385,11 +385,11 @@ public class MainActivity extends BaseActivity {
 
     //检测设备信息，然后注册
     private void checkThenRegister(final Setting deviceSetting) {
-        Observable<BaseResponse<StoreInfoBean>> deviceInfoObservable = new ServerApi(deviceSetting).getDeviceInfoObservable();
+        Observable<BaseResponseV1<StoreInfoBean>> deviceInfoObservable = new ServerApi(deviceSetting).getDeviceInfoObservable();
         deviceInfoObservable
-                .map(new Function<BaseResponse<StoreInfoBean>, StoreInfoBean>() {
+                .map(new Function<BaseResponseV1<StoreInfoBean>, StoreInfoBean>() {
                     @Override
-                    public StoreInfoBean apply(@io.reactivex.annotations.NonNull BaseResponse<StoreInfoBean> deviceInfoResponse) throws Exception {
+                    public StoreInfoBean apply(@io.reactivex.annotations.NonNull BaseResponseV1<StoreInfoBean> deviceInfoResponse) throws Exception {
                         StoreInfoBean storeInfoBean = deviceInfoResponse.getData();
                         if (storeInfoBean.isRegistered() && !deviceSetting.getDeviceSn().equals(storeInfoBean.getMac())) {
                             throw new Exception("设备已被‘" + storeInfoBean.getMac() + "’注册");
@@ -424,11 +424,11 @@ public class MainActivity extends BaseActivity {
     }
     //检测设备key
     private void checkKey(final Setting deviceSetting) {
-        Observable<BaseResponse<StoreInfoBean>> deviceInfoObservable = new ServerApi(deviceSetting).getDeviceInfoObservable();
+        Observable<BaseResponseV1<StoreInfoBean>> deviceInfoObservable = new ServerApi(deviceSetting).getDeviceInfoObservable();
         deviceInfoObservable
-                .map(new Function<BaseResponse<StoreInfoBean>, StoreInfoBean>() {
+                .map(new Function<BaseResponseV1<StoreInfoBean>, StoreInfoBean>() {
                     @Override
-                    public StoreInfoBean apply(@io.reactivex.annotations.NonNull BaseResponse<StoreInfoBean> deviceInfoResponse) throws Exception {
+                    public StoreInfoBean apply(@io.reactivex.annotations.NonNull BaseResponseV1<StoreInfoBean> deviceInfoResponse) throws Exception {
                         StoreInfoBean storeInfoBean = deviceInfoResponse.getData();
                         return storeInfoBean;
                     }
@@ -473,10 +473,10 @@ public class MainActivity extends BaseActivity {
             e.printStackTrace();
         }
 
-        Observable<BaseResponse<StoreInfoBean>> updateDeviceObservable = new ServerApi(deviceSetting).registerDeviceObservable(requestMap);
-        updateDeviceObservable.map(new Function<BaseResponse<StoreInfoBean>, StoreInfoBean>() {
+        Observable<BaseResponseV1<StoreInfoBean>> updateDeviceObservable = new ServerApi(deviceSetting).registerDeviceObservable(requestMap);
+        updateDeviceObservable.map(new Function<BaseResponseV1<StoreInfoBean>, StoreInfoBean>() {
             @Override
-            public StoreInfoBean apply(@io.reactivex.annotations.NonNull BaseResponse<StoreInfoBean> deviceInfoResponse) throws Exception {
+            public StoreInfoBean apply(@io.reactivex.annotations.NonNull BaseResponseV1<StoreInfoBean> deviceInfoResponse) throws Exception {
                 StoreInfoBean storeInfoBean = deviceInfoResponse.getData();
                 return storeInfoBean;
             }
